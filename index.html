@@ -311,8 +311,54 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
 <footer class="site-footer">
   <strong>© 2026 Runs. All rights reserved.</strong><br>
   Runs™ is the property of its creator. Unauthorized reproduction or use is prohibited.<br>
-  <span style="margin-top:4px;display:inline-block">runsports.netlify.app</span>
+  <span style="margin-top:4px;display:inline-block">jjcarver12-dev.github.io/runsports</span><br>
+  <span style="margin-top:8px;display:inline-block">
+    <button onclick="document.getElementById('modal-tos').classList.add('open')" style="background:none;border:none;color:var(--orange);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:underline">Terms of Service</button>
+    &nbsp;·&nbsp;
+    <button onclick="document.getElementById('modal-privacy').classList.add('open')" style="background:none;border:none;color:var(--orange);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:underline">Privacy Policy</button>
+  </span>
 </footer>
+
+<div class="overlay" id="modal-tos" onclick="closeModal('modal-tos',event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div><div class="modal-title">Terms of Service</div><div class="modal-sub">Last updated May 2026</div></div>
+      <button class="btn-close" onclick="closeModal('modal-tos')">✕</button>
+    </div>
+    <div class="modal-body" style="font-size:13px;color:var(--text2);line-height:1.7;display:block">
+      <p><strong style="color:var(--text)">1. Acceptance</strong><br>By using Runs you agree to these terms. If you do not agree, do not use the app.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">2. Who Can Use Runs</strong><br>You must be at least 13 years old to use Runs. By using the app you confirm you meet this requirement.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">3. What You Can Post</strong><br>You may post information about local pickup games, sports spots, and recreational activities. Posts must be accurate, real, and respectful. You are solely responsible for everything you post.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">4. What You Cannot Post</strong><br>You may not post anything illegal, harmful, threatening, abusive, harassing, or false. We reserve the right to remove any post at any time without notice.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">5. Safety & Liability</strong><br>Runs is a platform for connecting people. We do not organize, supervise, or guarantee any game or activity. You participate in any meetup arranged through Runs entirely at your own risk. Runs is not liable for any injury, loss, or damage that occurs as a result of using this app.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">6. Affiliate Links</strong><br>Runs participates in the Amazon Associates affiliate program. We earn a small commission on qualifying purchases made through links in the app at no extra cost to you.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">7. Intellectual Property</strong><br>The Runs name, design, and code are the property of Runs and its creator. You may not copy, reproduce, or reuse any part of this app without written permission.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">8. Changes</strong><br>We may update these terms at any time. Continued use of the app means you accept any updated terms.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">9. Contact</strong><br>Questions? Email us at runsapp2026@gmail.com</p>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-privacy" onclick="closeModal('modal-privacy',event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div><div class="modal-title">Privacy Policy</div><div class="modal-sub">Last updated May 2026</div></div>
+      <button class="btn-close" onclick="closeModal('modal-privacy')">✕</button>
+    </div>
+    <div class="modal-body" style="font-size:13px;color:var(--text2);line-height:1.7;display:block">
+      <p><strong style="color:var(--text)">1. What We Collect</strong><br>Runs stores your profile name, sport preference, skill level, and posts you create. This data is stored locally on your device only — it is never sent to a server.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">2. How We Use It</strong><br>Your information is used only to show you relevant posts and remember your preferences within the app. We do not sell, share, or transfer your data to any third party.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">3. Cookies & Advertising</strong><br>Runs uses Google AdSense to display ads. Google may use cookies to show you relevant ads based on your browsing. You can opt out at <a href="https://adssettings.google.com" target="_blank" style="color:var(--orange)">adssettings.google.com</a>.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">4. Amazon Affiliate</strong><br>Links in the Gear Shop are Amazon affiliate links. Amazon may use cookies when you click these links. See Amazon's privacy policy at amazon.com/privacy.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">5. Location Data</strong><br>If you choose to pin your post to the map, your device's location is used only to set that pin. We do not track or store your location continuously.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">6. Children's Privacy</strong><br>Runs is not directed at children under 13. We do not knowingly collect information from children under 13.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">7. Changes</strong><br>We may update this policy at any time. The date at the top of this page reflects the latest update.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">8. Contact</strong><br>Questions about your privacy? Email us at runsapp2026@gmail.com</p>
+    </div>
+  </div>
+</div>
 
 <nav id="bottom-nav">
   <button class="nav-item" id="nav-shop" onclick="switchView('shop')"><span class="nav-icon">🛒</span><span class="nav-lbl">Shop</span></button>
@@ -927,7 +973,7 @@ function saveSetup(){
 }
 
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape')['modal-post','modal-profile','modal-sport','modal-boost'].forEach(id=>document.getElementById(id).classList.remove('open'));
+  if(e.key==='Escape')['modal-post','modal-profile','modal-sport','modal-boost','modal-tos','modal-privacy'].forEach(id=>document.getElementById(id).classList.remove('open'));
   if(e.key==='Enter'&&document.activeElement.id==='ct-val')addContact();
 });
 
