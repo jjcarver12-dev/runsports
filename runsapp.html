@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Runs</title>
+<meta name="copyright" content="© 2026 Runs. All rights reserved.">
+<meta name="author" content="Runs App">
+<meta name="description" content="Find local pickup games and activities near you. Basketball, soccer, football, volleyball, tennis, pickleball, disc golf, yoga, running and more. Post a spot, find players, get active.">
+<meta name="keywords" content="pickup basketball, pickup soccer, pickleball near me, yoga near me, running groups, disc golf, flag football, volleyball, find players, local sports, pickup games, recreational activities">
+<meta property="og:title" content="Runs — Find Pickup Games & Activities Near You">
+<meta property="og:description" content="Post a spot, find players, get active. Basketball, soccer, pickleball, yoga, running and more.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://jjcarver12-dev.github.io/runsports">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Runs — Find Pickup Games Near You">
+<meta name="twitter:description" content="Find local pickup basketball, soccer, pickleball, yoga, running groups and more.">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+:root{--orange:#e85d04;--green:#22c55e;--blue:#3b82f6;--red:#ef4444;--bg:#f1f0ee;--card:#fff;--border:#e5e7eb;--text:#111827;--text2:#6b7280;--text3:#9ca3af}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px}
+#hdr{position:sticky;top:0;z-index:200;background:#fff;border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:22px;font-weight:700;color:var(--text)}
+.logo span{color:var(--orange)}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.sport-btn{display:flex;align-items:center;gap:6px;background:#f3f4f6;border:none;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;font-family:inherit}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--orange);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.avatar.sm{width:26px;height:26px;font-size:10px}
+#ticker{background:var(--orange);overflow:hidden;white-space:nowrap;padding:8px 0}
+.ticker-track{display:inline-flex;gap:16px;animation:ticker 28s linear infinite;padding-left:16px}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.ticker-label{font-size:12px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.5px;text-transform:uppercase;margin-right:4px}
+.ticker-item{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:600;color:#fff;text-decoration:none;white-space:nowrap}
+.ticker-item:hover{background:rgba(255,255,255,.28)}
+#search-area{background:#fff;padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center}
+.search-wrap{flex:1;display:flex;align-items:center;background:#f3f4f6;border-radius:24px;padding:0 16px;gap:8px}
+.search-wrap input{flex:1;background:none;border:none;outline:none;font-size:14px;color:var(--text);padding:10px 0;font-family:inherit}
+.search-wrap input::placeholder{color:var(--text3)}
+.btn-pin{width:40px;height:40px;border-radius:50%;background:#fce7f3;border:none;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0}
+.btn-filter{background:none;border:none;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;padding:4px 8px;white-space:nowrap;font-family:inherit}
+#tabs{background:#fff;display:flex;border-bottom:1px solid var(--border);max-width:640px;margin:0 auto}
+.tab-btn{flex:1;padding:14px;background:none;border:none;font-size:15px;font-weight:600;color:var(--text2);cursor:pointer;position:relative;font-family:inherit}
+.tab-btn.active{color:var(--orange)}
+.tab-btn.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--orange)}
+.view-section{display:none}
+.view-section.active{display:block}
+#view-map{height:calc(100vh - 210px);min-height:300px}
+#map-container{width:100%;height:100%}
+#feed{max-width:640px;margin:0 auto;padding:12px 12px 20px;display:flex;flex-direction:column;gap:10px}
+.post-card{background:var(--card);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden;display:flex}
+.card-border{width:4px;flex-shrink:0}
+.card-body{flex:1;padding:14px;min-width:0}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px}
+.badges{display:flex;gap:5px;flex-wrap:wrap}
+.badge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;white-space:nowrap}
+.b-spot{color:#16a34a;background:#dcfce7}
+.b-findpickup{color:#2563eb;background:#dbeafe}
+.b-needplayers{color:#d97706;background:#fef3c7}
+.b-postpeople{color:var(--orange);background:#ffedd5}
+.b-sport{color:var(--orange);background:#ffedd5}
+.b-fmt{color:var(--text2);background:#f3f4f6}
+.b-skill{color:#7c3aed;background:#ede9fe}
+.b-age{color:#0891b2;background:#cffafe}
+.card-ts{font-size:11px;color:var(--text3);flex-shrink:0;white-space:nowrap;margin-top:2px}
+.card-title{font-size:17px;font-weight:700;margin-bottom:6px;line-height:1.2}
+.card-user{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.user-name{font-size:13px;font-weight:600}
+.user-pos{font-size:11px;color:var(--text2);font-weight:400}
+.card-when{font-size:12px;color:var(--text2);margin-bottom:8px}
+.card-desc{font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:10px}
+.card-location{display:flex;align-items:center;justify-content:space-between;background:#f9fafb;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:8px;gap:8px}
+.loc-text{font-size:12px;color:var(--text2);flex:1}
+.btn-maps{display:flex;align-items:center;gap:4px;background:var(--blue);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap;flex-shrink:0;font-family:inherit}
+.card-status{margin-bottom:8px}
+.status-pill{font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;display:inline-block}
+.status-open{background:#dcfce7;color:#16a34a}
+.status-spots{background:#fef3c7;color:#d97706}
+.card-contacts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.contact-chip{display:flex;align-items:center;gap:5px;background:#f3f4f6;border-radius:6px;padding:5px 10px;font-size:12px;color:var(--text);font-weight:500;text-decoration:none;cursor:pointer;transition:background .15s}
+.contact-chip:hover{background:#e5e7eb}
+.card-actions{display:flex;gap:6px;margin-bottom:10px}
+.btn-imin{background:none;border:1.5px solid var(--green);color:var(--green);border-radius:6px;padding:5px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-imin:hover,.btn-imin.active{background:#dcfce7}
+.btn-share-sm{background:none;border:1.5px solid var(--border);color:var(--text2);border-radius:6px;padding:5px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-share-sm:hover{border-color:var(--blue);color:var(--blue)}
+.btn-del{background:none;border:1.5px solid var(--border);color:var(--text3);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-del:hover{border-color:var(--red);color:var(--red)}
+.card-footer{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border)}
+.footer-user{display:flex;align-items:center;gap:7px}
+.footer-name{font-size:12px;font-weight:600}
+.footer-pos{font-size:11px;color:var(--text2);font-weight:400}
+.mode-pill{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
+.mode-casual{background:#dcfce7;color:#16a34a}
+.mode-ranked{background:#fee2e2;color:#dc2626}
+#empty-state{padding:60px 20px;text-align:center}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:.4}
+.empty-title{font-size:18px;font-weight:700;color:var(--text2);margin-bottom:6px}
+.empty-sub{font-size:13px;color:var(--text3)}
+#view-shop{padding-bottom:20px}
+.shop-pg-head{padding:20px 16px 12px;max-width:640px;margin:0 auto}
+.shop-pg-title{font-size:22px;font-weight:800;margin-bottom:4px}
+.shop-pg-sub{font-size:13px;color:var(--text2)}
+.shop-pg-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 12px;max-width:640px;margin:0 auto}
+.store-card{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:14px;text-decoration:none;color:var(--text);display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:border-color .15s}
+.store-card:hover{border-color:var(--orange)}
+.store-cat{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.store-emoji{font-size:28px;margin-bottom:6px}
+.store-name{font-size:13px;font-weight:700;margin-bottom:4px}
+.store-desc{font-size:11px;color:var(--text2);line-height:1.5;flex:1;margin-bottom:8px}
+.store-price{font-size:13px;font-weight:700;color:var(--orange);margin-bottom:8px}
+.store-cta{display:block;text-align:center;background:#ff9900;color:#000;font-size:11px;font-weight:700;padding:6px 10px;border-radius:6px}
+.store-note{font-size:11px;color:var(--text3);text-align:center;font-style:italic;padding:16px;max-width:640px;margin:0 auto}
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:#fff;border-top:1px solid var(--border);display:flex;height:70px;align-items:center;padding:0 8px}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;cursor:pointer;color:var(--text3);font-family:inherit;padding:6px 0}
+.nav-item .nav-icon{font-size:22px;line-height:1}
+.nav-item .nav-lbl{font-size:10px;font-weight:600}
+.nav-item.active{color:var(--orange)}
+.nav-create{width:52px;height:52px;border-radius:50%;background:var(--orange);color:#fff;border:none;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(232,93,4,.4);margin:0 8px;flex-shrink:0}
+.nav-create:hover{opacity:.9}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-handle{width:36px;height:4px;background:#e5e7eb;border-radius:2px;margin:10px auto 0}
+.modal-head{padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.modal-title{font-size:18px;font-weight:700}
+.modal-sub{font-size:13px;color:var(--text2);margin-top:2px}
+.btn-close{width:28px;height:28px;border-radius:50%;background:#f3f4f6;border:none;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2)}
+.modal-body{padding:20px;display:flex;flex-direction:column;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.field input,.field select,.field textarea{background:#f3f4f6;border:1.5px solid #f3f4f6;color:var(--text);padding:10px 13px;border-radius:10px;font-family:inherit;font-size:14px;outline:none;transition:border-color .15s;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--orange);background:#fff}
+.field input::placeholder,.field textarea::placeholder{color:var(--text3)}
+.field textarea{resize:vertical}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.seg{display:flex}
+.seg-btn{flex:1;padding:9px 5px;text-align:center;border:1.5px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;font-family:inherit;font-weight:600;font-size:12px;transition:all .15s}
+.seg-btn:first-child{border-radius:8px 0 0 8px}
+.seg-btn:last-child{border-radius:0 8px 8px 0}
+.seg-btn:not(:first-child){border-left:none}
+.seg-btn.on{background:var(--orange);border-color:var(--orange);color:#fff}
+.tgl-row{display:flex;gap:6px;flex-wrap:wrap}
+.tgl-chip{padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;font-family:inherit;font-weight:600;font-size:13px;transition:all .15s}
+.tgl-chip:hover{border-color:var(--orange);color:var(--orange)}
+.tgl-chip.on{background:var(--orange);border-color:var(--orange);color:#fff}
+.divider{border:none;border-top:1px solid var(--border)}
+.sec-label{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.btn-primary{padding:14px;border-radius:12px;border:none;background:var(--orange);color:#fff;font-weight:700;font-size:15px;font-family:inherit;cursor:pointer;width:100%}
+.btn-primary:hover{opacity:.9}
+.btn-secondary{padding:12px;border-radius:12px;border:1.5px solid var(--border);background:#fff;color:var(--text);font-weight:600;font-size:14px;font-family:inherit;cursor:pointer;width:100%}
+.cadd{display:flex;gap:6px}
+.cadd input{flex:1}
+.btn-add{padding:10px 13px;border-radius:10px;border:1.5px solid var(--border);background:#fff;color:var(--orange);font-size:18px;cursor:pointer;flex-shrink:0}
+.cprev{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.cp-chip{display:flex;align-items:center;gap:5px;background:#f3f4f6;border-radius:6px;padding:4px 8px 4px 10px;font-size:12px}
+.cp-chip button{background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:0 2px}
+.cp-chip button:hover{color:var(--red)}
+.profile-banner{background:linear-gradient(135deg,#fff7ed,#ffedd5);border-radius:12px;padding:16px;margin-bottom:8px;display:flex;align-items:center;gap:14px}
+.profile-av-lg{width:52px;height:52px;border-radius:50%;background:var(--orange);color:#fff;font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.profile-name{font-size:20px;font-weight:700}
+.profile-sub{font-size:13px;color:var(--text2);margin-top:2px}
+.stat-row{display:flex;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px}
+.stat-box{flex:1;padding:14px 8px;text-align:center}
+.stat-box:not(:last-child){border-right:1px solid var(--border)}
+.stat-n{font-size:28px;font-weight:700;color:var(--orange);line-height:1}
+.stat-l{font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+.section-head{font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px}
+.hist-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}
+.hist-item:last-child{border-bottom:none}
+.hist-left{display:flex;align-items:center;gap:8px}
+.hist-name{font-weight:600}
+.hist-meta{font-size:11px;color:var(--text2)}
+.hist-date{font-size:11px;color:var(--text3)}
+.hist-empty{font-size:13px;color:var(--text3);font-style:italic;text-align:center;padding:16px 0}
+.btn-chat{background:none;border:1.5px solid var(--border);color:var(--text2);border-radius:6px;padding:5px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-chat:hover,.btn-chat.active{border-color:#7c3aed;color:#7c3aed}
+.chat-panel{border-top:1px solid var(--border);margin-top:10px;padding-top:10px}
+.chat-msgs{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;max-height:220px;overflow-y:auto}
+.chat-msg{display:flex;gap:8px;align-items:flex-start}
+.chat-av{width:24px;height:24px;border-radius:50%;background:var(--orange);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.chat-bubble{background:#f3f4f6;border-radius:10px;padding:7px 10px;flex:1;min-width:0}
+.chat-sender{font-size:11px;font-weight:700;color:var(--text);margin-bottom:2px}
+.chat-text{font-size:12px;color:var(--text2);line-height:1.4;word-break:break-word}
+.chat-ts{font-size:10px;color:var(--text3);margin-top:2px}
+.chat-empty{font-size:12px;color:var(--text3);font-style:italic;text-align:center;padding:8px 0}
+.chat-input-row{display:flex;gap:6px;align-items:center}
+.chat-input-row input{flex:1;background:#f3f4f6;border:1.5px solid #f3f4f6;border-radius:20px;padding:8px 14px;font-size:13px;font-family:inherit;outline:none;transition:border-color .15s}
+.chat-input-row input:focus{border-color:#7c3aed;background:#fff}
+.chat-input-row input::placeholder{color:var(--text3)}
+.btn-chat-send{width:34px;height:34px;border-radius:50%;background:#7c3aed;color:#fff;border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.btn-chat-send:hover{opacity:.85}
+.site-footer{background:#fff;border-top:1px solid var(--border);padding:16px;text-align:center;font-size:11px;color:var(--text3);margin-bottom:70px}
+.site-footer strong{color:var(--text2)}
+.sport-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:4px 0}
+.sport-opt{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;border-radius:12px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-family:inherit;transition:all .15s}
+.sport-opt:hover{border-color:var(--orange)}
+.sport-opt.on{border-color:var(--orange);background:#fff7ed}
+.sport-opt .s-icon{font-size:28px}
+.sport-opt .s-name{font-size:12px;font-weight:700;color:var(--text)}
+.setup-screen{position:fixed;inset:0;z-index:500;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px}
+.setup-screen.hidden{display:none}
+.setup-logo{font-size:48px;margin-bottom:12px}
+.setup-title{font-size:28px;font-weight:800;margin-bottom:6px}
+.setup-sub{font-size:15px;color:var(--text2);margin-bottom:32px;text-align:center}
+.setup-form{width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px}
+.btn-loc{background:none;border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;font-size:12px;font-weight:600;color:var(--orange);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px}
+.leaflet-popup-content{font-family:'DM Sans',sans-serif;font-size:13px}
+.popup-title{font-weight:700;font-size:14px;margin-bottom:4px}
+.popup-meta{color:#6b7280;margin-bottom:8px;font-size:12px}
+.popup-maps{display:inline-block;background:#3b82f6;color:#fff;padding:4px 10px;border-radius:6px;text-decoration:none;font-size:11px;font-weight:700;margin-right:6px}
+.map-legend{position:absolute;top:10px;right:10px;z-index:999;background:#fff;border-radius:10px;padding:10px 14px;font-size:11px;box-shadow:0 2px 8px rgba(0,0,0,.15);border:1px solid var(--border)}
+.map-legend-title{font-weight:700;margin-bottom:6px;font-size:12px}
+.legend-row{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+.legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+@media(max-width:480px){.g2{grid-template-columns:1fr}.shop-pg-grid{grid-template-columns:1fr}}
+@media(min-width:640px){#hdr,#search-area{padding:12px 24px}.overlay{align-items:center}.modal{border-radius:16px;margin:20px;max-height:85vh}}
+.ad-card{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);padding:10px 14px;display:flex;flex-direction:column;align-items:center;min-height:90px}
+.ad-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;align-self:flex-start}
+.post-card.boosted{border:2px solid var(--orange)}
+.sponsored-tag{font-size:10px;font-weight:700;color:var(--orange);background:#fff7ed;border:1px solid #fed7aa;border-radius:4px;padding:2px 8px;display:inline-block;margin-bottom:4px}
+.btn-boost{background:none;border:1.5px solid var(--border);color:var(--orange);border-radius:6px;padding:5px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-boost:hover,.btn-boost.active{background:#fff7ed;border-color:var(--orange)}
+.boost-opt{width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-family:inherit;transition:border-color .15s;text-align:left;display:flex;justify-content:space-between;align-items:center}
+.boost-opt:hover{border-color:var(--orange)}
+.boost-opt-name{font-size:14px;font-weight:700}
+.boost-opt-sub{font-size:12px;color:var(--text2)}
+</style>
+</head>
+<body>
+
+<div class="setup-screen" id="setup-screen">
+  <div class="setup-logo">🏀</div>
+  <div class="setup-title">Welcome to Runs</div>
+  <div class="setup-sub">Find pickup games near you. Post spots, find players, get active.</div>
+  <div class="setup-form">
+    <div class="field"><label>Your Name</label><input id="setup-name" placeholder="What do people call you?" maxlength="30"></div>
+    <div class="g2">
+      <div class="field"><label>Sport</label>
+        <select id="setup-sport">
+          <option value="basketball">🏀 Basketball</option>
+          <option value="football">🏈 Football</option>
+          <option value="soccer">⚽ Soccer</option>
+          <option value="volleyball">🏐 Volleyball</option>
+          <option value="tennis">🎾 Tennis</option>
+          <option value="pickleball">🏓 Pickleball</option>
+          <option value="discgolf">🥏 Disc Golf</option>
+          <option value="baseball">⚾ Baseball</option>
+          <option value="yoga">🧘 Yoga</option>
+          <option value="running">🏃 Running</option>
+        </select>
+      </div>
+      <div class="field"><label>City / Area</label><input id="setup-area" placeholder="e.g. Provo, UT" maxlength="40"></div>
+    </div>
+    <div class="field"><label>Skill Level</label>
+      <div class="seg" id="setup-skill-seg">
+        <button class="seg-btn" onclick="setSetupSkill('Beginner',this)">Beginner</button>
+        <button class="seg-btn" onclick="setSetupSkill('Intermediate',this)">Intermediate</button>
+        <button class="seg-btn on" onclick="setSetupSkill('Advanced',this)">Advanced</button>
+        <button class="seg-btn" onclick="setSetupSkill('Elite',this)">Elite</button>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="saveSetup()">Let's Go 🏀</button>
+  </div>
+</div>
+
+<header id="hdr">
+  <div class="logo">🏀 Runs <span>.</span></div>
+  <div class="hdr-right">
+    <button class="sport-btn" id="sport-btn" onclick="openSportPicker()">🏀 Basketball ▾</button>
+    <div class="avatar" id="hdr-av" onclick="openProfile()">?</div>
+  </div>
+</header>
+
+<div id="ticker"><div class="ticker-track" id="ticker-track"></div></div>
+
+<div id="search-area">
+  <div class="search-wrap">
+    <span style="color:#9ca3af;font-size:16px">🔍</span>
+    <input id="search-input" placeholder="Search city or zip code..." oninput="render()">
+  </div>
+  <button class="btn-pin" onclick="clearSearch()">📍</button>
+  <button class="btn-filter">Filter</button>
+</div>
+
+<div id="tabs">
+  <button class="tab-btn active" id="tab-casual" onclick="switchTab('casual')">Casual</button>
+  <button class="tab-btn" id="tab-ranked" onclick="switchTab('ranked')">Ranked</button>
+</div>
+
+<div class="view-section active" id="view-feed">
+  <div id="feed"></div>
+</div>
+
+<div class="view-section" id="view-map" style="position:relative">
+  <div id="map-container"></div>
+  <div class="map-legend" id="map-legend"></div>
+</div>
+
+<div class="view-section" id="view-shop">
+  <div class="shop-pg-head">
+    <div class="shop-pg-title">🛒 Gear Shop</div>
+    <div class="shop-pg-sub">Picks from the court. Affiliate links support Runs.</div>
+  </div>
+  <div class="shop-pg-grid" id="shop-grid"></div>
+  <p class="store-note">As an Amazon Associate, Runs earns from qualifying purchases · tag: runsapp-20</p>
+</div>
+
+<footer class="site-footer">
+  <strong>© 2026 Runs. All rights reserved.</strong><br>
+  Runs™ is the property of its creator. Unauthorized reproduction or use is prohibited.<br>
+  <span style="margin-top:4px;display:inline-block">jjcarver12-dev.github.io/runsports</span><br>
+  <span style="margin-top:8px;display:inline-block">
+    <button onclick="document.getElementById('modal-tos').classList.add('open')" style="background:none;border:none;color:var(--orange);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:underline">Terms of Service</button>
+    &nbsp;·&nbsp;
+    <button onclick="document.getElementById('modal-privacy').classList.add('open')" style="background:none;border:none;color:var(--orange);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:underline">Privacy Policy</button>
+  </span>
+</footer>
+
+<div class="overlay" id="modal-tos" onclick="closeModal('modal-tos',event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div><div class="modal-title">Terms of Service</div><div class="modal-sub">Last updated May 2026</div></div>
+      <button class="btn-close" onclick="closeModal('modal-tos')">✕</button>
+    </div>
+    <div class="modal-body" style="font-size:13px;color:var(--text2);line-height:1.7;display:block">
+      <p><strong style="color:var(--text)">1. Acceptance</strong><br>By using Runs you agree to these terms. If you do not agree, do not use the app.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">2. Who Can Use Runs</strong><br>You must be at least 13 years old to use Runs. By using the app you confirm you meet this requirement.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">3. What You Can Post</strong><br>You may post information about local pickup games, sports spots, and recreational activities. Posts must be accurate, real, and respectful. You are solely responsible for everything you post.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">4. What You Cannot Post</strong><br>You may not post anything illegal, harmful, threatening, abusive, harassing, or false. We reserve the right to remove any post at any time without notice.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">5. Safety & Liability</strong><br>Runs is a platform for connecting people. We do not organize, supervise, or guarantee any game or activity. You participate in any meetup arranged through Runs entirely at your own risk. Runs is not liable for any injury, loss, or damage that occurs as a result of using this app.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">6. Affiliate Links</strong><br>Runs participates in the Amazon Associates affiliate program. We earn a small commission on qualifying purchases made through links in the app at no extra cost to you.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">7. Intellectual Property</strong><br>The Runs name, design, and code are the property of Runs and its creator. You may not copy, reproduce, or reuse any part of this app without written permission.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">8. Changes</strong><br>We may update these terms at any time. Continued use of the app means you accept any updated terms.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">9. Contact</strong><br>Questions? Email us at runsapp2026@gmail.com</p>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-privacy" onclick="closeModal('modal-privacy',event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div><div class="modal-title">Privacy Policy</div><div class="modal-sub">Last updated May 2026</div></div>
+      <button class="btn-close" onclick="closeModal('modal-privacy')">✕</button>
+    </div>
+    <div class="modal-body" style="font-size:13px;color:var(--text2);line-height:1.7;display:block">
+      <p><strong style="color:var(--text)">1. What We Collect</strong><br>Runs stores your profile name, sport preference, skill level, and posts you create. This data is stored locally on your device only — it is never sent to a server.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">2. How We Use It</strong><br>Your information is used only to show you relevant posts and remember your preferences within the app. We do not sell, share, or transfer your data to any third party.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">3. Cookies & Advertising</strong><br>Runs uses Google AdSense to display ads. Google may use cookies to show you relevant ads based on your browsing. You can opt out at <a href="https://adssettings.google.com" target="_blank" style="color:var(--orange)">adssettings.google.com</a>.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">4. Amazon Affiliate</strong><br>Links in the Gear Shop are Amazon affiliate links. Amazon may use cookies when you click these links. See Amazon's privacy policy at amazon.com/privacy.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">5. Location Data</strong><br>If you choose to pin your post to the map, your device's location is used only to set that pin. We do not track or store your location continuously.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">6. Children's Privacy</strong><br>Runs is not directed at children under 13. We do not knowingly collect information from children under 13.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">7. Changes</strong><br>We may update this policy at any time. The date at the top of this page reflects the latest update.</p>
+      <p style="margin-top:12px"><strong style="color:var(--text)">8. Contact</strong><br>Questions about your privacy? Email us at runsapp2026@gmail.com</p>
+    </div>
+  </div>
+</div>
+
+<nav id="bottom-nav">
+  <button class="nav-item" id="nav-shop" onclick="switchView('shop')"><span class="nav-icon">🛒</span><span class="nav-lbl">Shop</span></button>
+  <button class="nav-item" id="nav-map" onclick="switchView('map')"><span class="nav-icon">🗺️</span><span class="nav-lbl">Map</span></button>
+  <button class="nav-create" onclick="openPostModal('findpickup')">+</button>
+  <button class="nav-item active" id="nav-find" onclick="switchView('feed')"><span class="nav-icon">🔍</span><span class="nav-lbl">Find</span></button>
+  <button class="nav-item" id="nav-profile" onclick="openProfile()"><span class="nav-icon">👤</span><span class="nav-lbl">Profile</span></button>
+</nav>
+
+<div class="overlay" id="modal-post" onclick="closeModal('modal-post',event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div><div class="modal-title" id="mpost-title">Post</div><div class="modal-sub" id="mpost-sub"></div></div>
+      <button class="btn-close" onclick="closeModal('modal-post')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Type</label>
+        <div class="tgl-row" id="post-type-row">
+          <button class="tgl-chip on" onclick="setPostType('findpickup',this)">🔍 Find Pickup</button>
+          <button class="tgl-chip" onclick="setPostType('needplayers',this)">👥 Need Players</button>
+          <button class="tgl-chip" onclick="setPostType('spot',this)">📍 Post a Spot</button>
+          <button class="tgl-chip" onclick="setPostType('postpeople',this)">🤙 Got People</button>
+        </div>
+      </div>
+      <div class="field"><label>Title</label><input id="pm-title" placeholder="Short and clear" maxlength="80"></div>
+      <div class="field"><label>Details</label><textarea id="pm-desc" rows="3" placeholder="Skill level, vibe, what you need..."></textarea></div>
+      <div class="g2">
+        <div class="field"><label>Location</label><input id="pm-loc" placeholder="Court, gym, city..."></div>
+        <div class="field"><label>When</label><input id="pm-when" placeholder="Tonight, Sat AM..."></div>
+      </div>
+      <div class="field">
+        <label>Pin to Map</label>
+        <button class="btn-loc" id="btn-getloc" onclick="getGeoLocation()">📍 Use my location</button>
+        <div id="loc-status" style="font-size:11px;color:var(--text2);margin-top:4px"></div>
+      </div>
+      <div class="g2">
+        <div class="field"><label>Format</label>
+          <select id="pm-fmt"><option value="any">Any / Open</option><option value="3v3">3v3</option><option value="4v4">4v4</option><option value="5v5">5v5</option></select>
+        </div>
+        <div class="field"><label>Skill Level</label>
+          <select id="pm-skill"><option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="Advanced" selected>Advanced</option><option value="Elite">Elite</option></select>
+        </div>
+      </div>
+      <div class="field" id="pm-needed-wrap" style="display:none"><label># Players Needed</label><input type="number" id="pm-needed" min="1" max="30" value="3"></div>
+      <hr class="divider">
+      <div class="sec-label">Your Info</div>
+      <div class="g2">
+        <div class="field"><label>Name / Handle</label><input id="pm-host" placeholder="@handle" maxlength="30"></div>
+        <div class="field"><label>Position</label>
+          <select id="pm-pos"><option value="">—</option><option>PG</option><option>SG</option><option>SF</option><option>PF</option><option>C</option><option>Any</option></select>
+        </div>
+      </div>
+      <hr class="divider">
+      <div class="sec-label">How to Reach You</div>
+      <div class="tgl-row" style="margin-bottom:8px">
+        <button class="tgl-chip" style="font-size:12px" onclick="qc('Phone/Text')">📱 Phone</button>
+        <button class="tgl-chip" style="font-size:12px" onclick="qc('Email')">📧 Email</button>
+        <button class="tgl-chip" style="font-size:12px" onclick="qc('Snapchat')">👻 Snap</button>
+        <button class="tgl-chip" style="font-size:12px" onclick="qc('Instagram')">📸 IG</button>
+        <button class="tgl-chip" style="font-size:12px" onclick="qc('GroupMe')">💬 GroupMe</button>
+        <button class="tgl-chip" style="font-size:12px" onclick="qc('Other')">🔗 Other</button>
+      </div>
+      <div class="cadd">
+        <input id="ct-type" placeholder="Type" style="max-width:130px">
+        <input id="ct-val" placeholder="Username / number / link">
+        <button class="btn-add" onclick="addContact()">+</button>
+      </div>
+      <div class="cprev" id="cprev"></div>
+      <button class="btn-primary" onclick="submitPost()">Post It</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-profile" onclick="closeModal('modal-profile',event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div><div class="modal-title">My Profile</div></div>
+      <button class="btn-close" onclick="closeModal('modal-profile')">✕</button>
+    </div>
+    <div class="modal-body" id="profile-body"></div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-sport" onclick="closeModal('modal-sport',event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div><div class="modal-title">Pick an Activity</div></div>
+      <button class="btn-close" onclick="closeModal('modal-sport')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="sport-grid" id="sport-grid"></div>
+    </div>
+  </div>
+</div>
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9943920301485236" crossorigin="anonymous"></script>
+
+<div class="overlay" id="modal-boost" onclick="closeModal('modal-boost',event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div><div class="modal-title">⚡ Boost Post</div><div class="modal-sub">Pin to top of the feed with a Sponsored badge</div></div>
+      <button class="btn-close" onclick="closeModal('modal-boost')">✕</button>
+    </div>
+    <div class="modal-body" id="boost-body"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const LS={get:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+let profile=LS.get('runs_profile',null),posts=LS.get('runs_posts',[]),runHistory=LS.get('runs_history',{places:[]}),activeTab=LS.get('runs_tab','casual'),myImIns=LS.get('runs_myimins',[]),privateStats=LS.get('runs_stats',{posted:0,imins:0}),postComments=LS.get('runs_comments',{}),postDraft={type:'findpickup',contacts:[],lat:null,lng:null},setupSkill='Advanced',currentView='feed',selectedSport=LS.get('runs_sport','basketball'),leafletMap=null,mapMarkers=[],boostedPosts=LS.get('runs_boosts',{});
+
+const SPORTS=[
+  {id:'basketball',label:'Basketball',icon:'🏀'},
+  {id:'football',label:'Football',icon:'🏈'},
+  {id:'soccer',label:'Soccer',icon:'⚽'},
+  {id:'volleyball',label:'Volleyball',icon:'🏐'},
+  {id:'tennis',label:'Tennis',icon:'🎾'},
+  {id:'pickleball',label:'Pickleball',icon:'🏓'},
+  {id:'discgolf',label:'Disc Golf',icon:'🥏'},
+  {id:'baseball',label:'Baseball',icon:'⚾'},
+  {id:'yoga',label:'Yoga',icon:'🧘'},
+  {id:'running',label:'Running',icon:'🏃'},
+];
+
+const TAG='runsapp-20';
+
+const TICKER_BY_SPORT={
+  basketball:[
+    {label:'🏀 NBA Ball $149',url:'https://www.amazon.com/Wilson-NBA-Official-Game-Basketball/dp/B098TYD4BZ/?tag='+TAG},
+    {label:'💧 Gatorade 36-pk $28',url:'https://www.amazon.com/s?k=gatorade+variety+pack&tag='+TAG},
+    {label:'👟 Shoes from $89',url:'https://www.amazon.com/s?k=basketball+shoes+men&tag='+TAG},
+    {label:'🎒 Ball Bag $45',url:'https://www.amazon.com/WILSON-NBA-Authentic-Basketball-Backpack/dp/B099SG5113/?tag='+TAG},
+    {label:'🦵 Ankle Brace $18',url:'https://www.amazon.com/Ankle-Brace-Adjustable-Compression-Basketball/dp/B071NMBSVS/?tag='+TAG},
+    {label:'💨 Ball Pump $10',url:'https://www.amazon.com/Ball-Pump-Needles-Nozzle-Inflatables/dp/B095LDKLCK/?tag='+TAG},
+  ],
+  soccer:[
+    {label:'⚽ Soccer Ball $30',url:'https://www.amazon.com/s?k=soccer+ball+outdoor&tag='+TAG},
+    {label:'👟 Cleats from $40',url:'https://www.amazon.com/s?k=soccer+cleats+men&tag='+TAG},
+    {label:'🧤 GK Gloves $25',url:'https://www.amazon.com/s?k=goalkeeper+gloves&tag='+TAG},
+    {label:'🦺 Pinnies $15',url:'https://www.amazon.com/s?k=soccer+pinnies+vest+set&tag='+TAG},
+    {label:'🛡 Shin Guards $15',url:'https://www.amazon.com/s?k=soccer+shin+guards&tag='+TAG},
+  ],
+  football:[
+    {label:'🏈 Football $30',url:'https://www.amazon.com/s?k=football+official+size&tag='+TAG},
+    {label:'🚩 Flag Set $20',url:'https://www.amazon.com/s?k=flag+football+set&tag='+TAG},
+    {label:'🧤 Receiver Gloves $25',url:'https://www.amazon.com/s?k=football+receiver+gloves&tag='+TAG},
+    {label:'👟 Cleats from $40',url:'https://www.amazon.com/s?k=football+cleats+men&tag='+TAG},
+  ],
+  volleyball:[
+    {label:'🏐 Volleyball $25',url:'https://www.amazon.com/s?k=volleyball+outdoor&tag='+TAG},
+    {label:'🩱 Knee Pads $18',url:'https://www.amazon.com/s?k=volleyball+knee+pads&tag='+TAG},
+    {label:'🕶 Sport Shades $20',url:'https://www.amazon.com/s?k=sports+sunglasses+polarized&tag='+TAG},
+    {label:'🏖 Beach Net $60',url:'https://www.amazon.com/s?k=beach+volleyball+net+portable&tag='+TAG},
+  ],
+  tennis:[
+    {label:'🎾 Racket from $50',url:'https://www.amazon.com/s?k=tennis+racket&tag='+TAG},
+    {label:'🎾 Tennis Balls $10',url:'https://www.amazon.com/s?k=tennis+balls+can&tag='+TAG},
+    {label:'👟 Court Shoes $60',url:'https://www.amazon.com/s?k=tennis+court+shoes+men&tag='+TAG},
+    {label:'🎒 Tennis Bag $30',url:'https://www.amazon.com/s?k=tennis+bag+racket&tag='+TAG},
+  ],
+  pickleball:[
+    {label:'🏓 Paddle from $35',url:'https://www.amazon.com/s?k=pickleball+paddle&tag='+TAG},
+    {label:'🟡 Pickleballs $15',url:'https://www.amazon.com/s?k=pickleballs+outdoor&tag='+TAG},
+    {label:'👟 Court Shoes $60',url:'https://www.amazon.com/s?k=pickleball+court+shoes&tag='+TAG},
+    {label:'🎒 Paddle Bag $25',url:'https://www.amazon.com/s?k=pickleball+bag&tag='+TAG},
+    {label:'🥅 Portable Net $80',url:'https://www.amazon.com/s?k=portable+pickleball+net&tag='+TAG},
+  ],
+  discgolf:[
+    {label:'🥏 Disc Set $30',url:'https://www.amazon.com/s?k=disc+golf+set+beginner&tag='+TAG},
+    {label:'🎒 Disc Bag $40',url:'https://www.amazon.com/s?k=disc+golf+bag&tag='+TAG},
+    {label:'🥏 Driver Disc $15',url:'https://www.amazon.com/s?k=disc+golf+driver&tag='+TAG},
+    {label:'🧤 Grip Glove $12',url:'https://www.amazon.com/s?k=disc+golf+glove&tag='+TAG},
+  ],
+  baseball:[
+    {label:'⚾ Baseball Glove $40',url:'https://www.amazon.com/s?k=baseball+glove&tag='+TAG},
+    {label:'🏏 Bat from $50',url:'https://www.amazon.com/s?k=baseball+bat&tag='+TAG},
+    {label:'⚾ Baseballs $20',url:'https://www.amazon.com/s?k=baseballs+12+pack&tag='+TAG},
+    {label:'⛑ Batting Helmet $30',url:'https://www.amazon.com/s?k=baseball+batting+helmet&tag='+TAG},
+    {label:'👟 Cleats from $40',url:'https://www.amazon.com/s?k=baseball+cleats+men&tag='+TAG},
+  ],
+  yoga:[
+    {label:'🧘 Yoga Mat $30',url:'https://www.amazon.com/s?k=yoga+mat+non+slip&tag='+TAG},
+    {label:'🧱 Yoga Blocks $15',url:'https://www.amazon.com/s?k=yoga+blocks+set&tag='+TAG},
+    {label:'🎽 Yoga Pants $28',url:'https://www.amazon.com/s?k=yoga+pants+women&tag='+TAG},
+    {label:'💧 Water Bottle $20',url:'https://www.amazon.com/s?k=insulated+water+bottle&tag='+TAG},
+    {label:'🧴 Yoga Strap $12',url:'https://www.amazon.com/s?k=yoga+strap+stretch&tag='+TAG},
+  ],
+  running:[
+    {label:'👟 Running Shoes $80',url:'https://www.amazon.com/s?k=running+shoes+men&tag='+TAG},
+    {label:'⌚ GPS Watch $120',url:'https://www.amazon.com/s?k=gps+running+watch&tag='+TAG},
+    {label:'🎧 Sport Earbuds $40',url:'https://www.amazon.com/s?k=wireless+earbuds+sport+waterproof&tag='+TAG},
+    {label:'💧 Handheld Bottle $20',url:'https://www.amazon.com/s?k=running+water+bottle+handheld&tag='+TAG},
+  ],
+};
+
+const STORE_BY_SPORT={
+  basketball:[
+    {name:'Wilson NBA Game Ball',emoji:'🏀',desc:'Official NBA basketball — premium leather, size 7',price:'$170',cat:'Ball',url:'https://www.amazon.com/Wilson-NBA-Official-Game-Basketball/dp/B098TYD4BZ/'},
+    {name:'Basketball Shoes',emoji:'👟',desc:'Court-grip traction, ankle support',price:'From $70',cat:'Footwear',kw:'basketball+shoes+men'},
+    {name:'Wilson NBA Backpack',emoji:'🎒',desc:'Ball compartment, shoe pocket',price:'From $45',cat:'Gear',url:'https://www.amazon.com/WILSON-NBA-Authentic-Basketball-Backpack/dp/B099SG5113/'},
+    {name:'Ankle Brace',emoji:'🦵',desc:'Adjustable compression support',price:'From $18',cat:'Protection',url:'https://www.amazon.com/Ankle-Brace-Adjustable-Compression-Basketball/dp/B071NMBSVS/'},
+    {name:'Ball Pump Kit',emoji:'💨',desc:'5 needles — never play on a flat',price:'From $10',cat:'Accessories',url:'https://www.amazon.com/Ball-Pump-Needles-Nozzle-Inflatables/dp/B095LDKLCK/'},
+    {name:'Nike Compression Shorts',emoji:'🩳',desc:'Dri-FIT moisture-wicking',price:'From $28',cat:'Apparel',kw:'nike+compression+shorts+basketball'},
+    {name:'Portable Basketball Hoop',emoji:'🏟',desc:'Adjustable 4.5–10 ft, 44" backboard',price:'From $180',cat:'Equipment',url:'https://www.amazon.com/DWVO-Basketball-Adjustable-Shatterproof-Backboard/dp/B0CCNY2YQM/'},
+    {name:'Headband & Wristband Set',emoji:'🎽',desc:'6-piece sweat set',price:'From $10',cat:'Accessories',url:'https://www.amazon.com/Sweatband-Sports-Basketball-Headband-Wristband/dp/B0FPLTSTVV/'},
+  ],
+  soccer:[
+    {name:'Soccer Ball',emoji:'⚽',desc:'FIFA quality, durable outdoor play',price:'From $30',cat:'Ball',kw:'soccer+ball+outdoor+fifa'},
+    {name:'Soccer Cleats',emoji:'👟',desc:'Firm ground traction, all positions',price:'From $40',cat:'Footwear',kw:'soccer+cleats+men'},
+    {name:'Goalkeeper Gloves',emoji:'🧤',desc:'Palm grip, finger protection',price:'From $25',cat:'Protection',kw:'goalkeeper+gloves'},
+    {name:'Pinnies / Vests',emoji:'🦺',desc:'Pack of 12, multiple colors',price:'From $15',cat:'Gear',kw:'soccer+pinnies+vest+set'},
+    {name:'Shin Guards',emoji:'🛡',desc:'Lightweight ankle sleeve included',price:'From $15',cat:'Protection',kw:'soccer+shin+guards'},
+    {name:'Soccer Bag',emoji:'🎒',desc:'Ball holder + shoe compartment',price:'From $35',cat:'Gear',kw:'soccer+bag+backpack'},
+  ],
+  football:[
+    {name:'Football',emoji:'🏈',desc:'Official size, great grip',price:'From $30',cat:'Ball',kw:'football+official+size'},
+    {name:'Flag Football Set',emoji:'🚩',desc:'14-player set with flags & belts',price:'From $20',cat:'Gear',kw:'flag+football+set'},
+    {name:'Receiver Gloves',emoji:'🧤',desc:'Tacky grip, flexible fit',price:'From $25',cat:'Gear',kw:'football+receiver+gloves'},
+    {name:'Football Cleats',emoji:'👟',desc:'Ankle support, turf-ready',price:'From $40',cat:'Footwear',kw:'football+cleats+men'},
+    {name:'Mouth Guard',emoji:'🦷',desc:'Boil-and-bite, low profile',price:'From $8',cat:'Protection',kw:'football+mouth+guard'},
+    {name:'Cones & Agility Set',emoji:'🔶',desc:'12 cones + speed ladder',price:'From $20',cat:'Training',kw:'agility+cones+speed+ladder'},
+  ],
+  volleyball:[
+    {name:'Volleyball',emoji:'🏐',desc:'Indoor/outdoor composite leather',price:'From $25',cat:'Ball',kw:'volleyball+outdoor'},
+    {name:'Knee Pads',emoji:'🩱',desc:'Low-profile, high protection',price:'From $18',cat:'Protection',kw:'volleyball+knee+pads'},
+    {name:'Sports Sunglasses',emoji:'🕶',desc:'UV400, polarized, wrap-around',price:'From $20',cat:'Accessories',kw:'sports+sunglasses+polarized'},
+    {name:'Beach Volleyball Net',emoji:'🏖',desc:'Portable with poles, regulation size',price:'From $60',cat:'Equipment',kw:'beach+volleyball+net+portable'},
+  ],
+  tennis:[
+    {name:'Tennis Racket',emoji:'🎾',desc:'All-around control, intermediate play',price:'From $50',cat:'Racket',kw:'tennis+racket'},
+    {name:'Tennis Balls (4-pack)',emoji:'🟡',desc:'Pressurized, durable',price:'From $10',cat:'Ball',kw:'tennis+balls+can+4'},
+    {name:'Tennis Shoes',emoji:'👟',desc:'Court cushioning, lateral support',price:'From $60',cat:'Footwear',kw:'tennis+court+shoes+men'},
+    {name:'Tennis Bag',emoji:'🎒',desc:'Holds 2-3 rackets + gear',price:'From $30',cat:'Gear',kw:'tennis+bag+racket'},
+  ],
+  pickleball:[
+    {name:'Pickleball Paddle',emoji:'🏓',desc:'Graphite face, polymer core, mid-weight',price:'From $35',cat:'Paddle',kw:'pickleball+paddle'},
+    {name:'Outdoor Pickleballs',emoji:'🟡',desc:'40-hole durable outdoor balls, 6-pack',price:'From $15',cat:'Ball',kw:'pickleballs+outdoor+6+pack'},
+    {name:'Court Shoes',emoji:'👟',desc:'Lateral support, non-marking sole',price:'From $60',cat:'Footwear',kw:'pickleball+court+shoes'},
+    {name:'Paddle Bag',emoji:'🎒',desc:'Holds 2 paddles + balls + accessories',price:'From $25',cat:'Gear',kw:'pickleball+bag'},
+    {name:'Portable Net',emoji:'🥅',desc:'Full regulation size, sets up in minutes',price:'From $80',cat:'Equipment',kw:'portable+pickleball+net'},
+    {name:'Grip Tape',emoji:'🖐',desc:'Moisture-wicking overwrap, 15-pack',price:'From $10',cat:'Accessories',kw:'pickleball+paddle+grip+tape'},
+  ],
+  discgolf:[
+    {name:'Disc Golf Starter Set',emoji:'🥏',desc:'Driver, mid-range, putter — great for beginners',price:'From $30',cat:'Discs',kw:'disc+golf+set+beginner'},
+    {name:'Disc Golf Bag',emoji:'🎒',desc:'Holds 10-15 discs, shoulder strap',price:'From $40',cat:'Gear',kw:'disc+golf+bag'},
+    {name:'Distance Driver',emoji:'🥏',desc:'High-speed driver for max distance',price:'From $15',cat:'Disc',kw:'disc+golf+driver'},
+    {name:'Putter Disc',emoji:'🎯',desc:'Consistent flight, great for approach shots',price:'From $12',cat:'Disc',kw:'disc+golf+putter'},
+    {name:'Disc Golf Glove',emoji:'🧤',desc:'Grip in any weather, fits right or left',price:'From $12',cat:'Accessories',kw:'disc+golf+glove'},
+    {name:'Mini Marker Disc',emoji:'🔵',desc:'Mark your lie — pack of 4',price:'From $8',cat:'Accessories',kw:'disc+golf+mini+marker'},
+  ],
+  baseball:[
+    {name:'Baseball Glove',emoji:'🥊',desc:'Full grain leather, all positions',price:'From $40',cat:'Fielding',kw:'baseball+glove+adult'},
+    {name:'Aluminum Bat',emoji:'🏏',desc:'USSSA approved, balanced swing weight',price:'From $50',cat:'Batting',kw:'baseball+bat+aluminum'},
+    {name:'Baseballs (12-pack)',emoji:'⚾',desc:'Practice and game balls, leather cover',price:'From $20',cat:'Ball',kw:'baseballs+12+pack'},
+    {name:'Batting Helmet',emoji:'⛑',desc:'Single ear flap, ABS shell',price:'From $30',cat:'Safety',kw:'baseball+batting+helmet'},
+    {name:'Baseball Cleats',emoji:'👟',desc:'Molded cleats, ankle support',price:'From $40',cat:'Footwear',kw:'baseball+cleats+men'},
+    {name:'Batting Gloves',emoji:'🧤',desc:'Padded palm, adjustable wrist strap',price:'From $20',cat:'Batting',kw:'batting+gloves+baseball'},
+  ],
+  running:[
+    {name:'Running Shoes',emoji:'👟',desc:'Cushioned, breathable, road-ready',price:'From $80',cat:'Footwear',kw:'running+shoes+men'},
+    {name:'GPS Running Watch',emoji:'⌚',desc:'Pace, distance, heart rate',price:'From $120',cat:'Tech',kw:'gps+running+watch'},
+    {name:'Wireless Sport Earbuds',emoji:'🎧',desc:'Sweat-proof, secure fit',price:'From $40',cat:'Tech',kw:'wireless+earbuds+sport+waterproof'},
+    {name:'Running Water Bottle',emoji:'💧',desc:'Handheld, 16oz, insulated',price:'From $20',cat:'Accessories',kw:'running+water+bottle+handheld'},
+    {name:'Compression Socks',emoji:'🧦',desc:'Arch support, blister prevention',price:'From $12',cat:'Apparel',kw:'running+compression+socks'},
+    {name:'Reflective Running Vest',emoji:'🦺',desc:'High-vis for early runs',price:'From $15',cat:'Safety',kw:'reflective+running+vest'},
+  ],
+  yoga:[
+    {name:'Non-Slip Yoga Mat',emoji:'🧘',desc:'6mm thick, extra grip, carrying strap included',price:'From $30',cat:'Mat',kw:'yoga+mat+non+slip+thick'},
+    {name:'Yoga Blocks (Set of 2)',emoji:'🧱',desc:'High-density foam, great for all levels',price:'From $15',cat:'Props',kw:'yoga+blocks+set+foam'},
+    {name:'Yoga Strap',emoji:'🎗',desc:'8-ft cotton strap, 10 loop positions',price:'From $12',cat:'Props',kw:'yoga+strap+stretch+cotton'},
+    {name:'Yoga Pants',emoji:'🎽',desc:'High-waist, 4-way stretch, moisture-wicking',price:'From $28',cat:'Apparel',kw:'yoga+pants+high+waist+women'},
+    {name:'Yoga Bag',emoji:'🎒',desc:'Fits mat + gear, adjustable shoulder strap',price:'From $22',cat:'Gear',kw:'yoga+mat+bag+carrier'},
+    {name:'Foam Roller',emoji:'🔵',desc:'Deep tissue muscle recovery, 13-inch',price:'From $20',cat:'Recovery',kw:'foam+roller+muscle+recovery'},
+    {name:'Resistance Bands Set',emoji:'🟡',desc:'5 levels, great for stretching and warm-up',price:'From $15',cat:'Props',kw:'resistance+bands+set+yoga'},
+    {name:'Meditation Cushion',emoji:'🪷',desc:'Buckwheat fill, removable cover',price:'From $35',cat:'Accessories',kw:'meditation+cushion+zafu'},
+  ],
+};
+
+const TM={
+  spot:{label:'📍 Post a Spot',cls:'b-spot',color:'#22c55e',title:'Post a Spot',sub:'Drop a court or open gym'},
+  findpickup:{label:'🔍 Find Pickup',cls:'b-findpickup',color:'#60a5fa',title:'Find Pickup',sub:'Looking for a run to join'},
+  needplayers:{label:'👥 Need Players',cls:'b-needplayers',color:'#f59e0b',title:'Need Players',sub:'Got a spot, need more people'},
+  postpeople:{label:'🤙 Got People',cls:'b-postpeople',color:'#f97316',title:'Got People',sub:'You have a crew, need a spot'},
+};
+const CI={'Phone/Text':'📱','Email':'📧','Snapchat':'👻','Instagram':'📸','GroupMe':'💬','Other':'🔗'};
+
+function getSport(){return SPORTS.find(s=>s.id===selectedSport)||SPORTS[0];}
+function ago(ts){const s=Math.floor((Date.now()-ts)/1000);if(s<60)return'just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago';}
+function savePosts(){LS.set('runs_posts',posts);}
+function saveHistory(){LS.set('runs_history',runHistory);}
+function saveStats(){LS.set('runs_stats',privateStats);}
+function saveBoosts(){LS.set('runs_boosts',boostedPosts);}
+
+if(!posts.length||!posts[0].sport){posts=seed();savePosts();}
+
+function seed(){
+  const n=Date.now();
+  return [
+    {id:1,tab:'casual',type:'spot',sport:'basketball',title:'Open gym — 24 Hour Fitness Provo',desc:'Full court open, running 5s. All skill levels welcome. Come through.',location:'24 Hour Fitness · University Ave, Provo',when:'Tomorrow · 6:00 PM',fmt:'5v5',openGym:true,needed:null,host:'Marcus',pos:'PG',skill:'Advanced',age:'18+',contact:[{type:'Phone/Text',val:'801-555-0192'},{type:'Instagram',val:'@marcusbball'}],ts:n-1000*60*22,imIn:0,lat:40.2338,lng:-111.6585},
+    {id:2,tab:'casual',type:'postpeople',sport:'basketball',title:'Got 8 players, need a court — Lehi',desc:'Full crew of 8 ready to run 4v4. Anyone know an open gym or available court in Lehi tonight?',location:'Lehi / American Fork',when:'Tomorrow · 8:00 PM',fmt:'4v4',openGym:false,needed:8,host:'Trell',pos:'SF',skill:'Intermediate',age:'18+',contact:[{type:'GroupMe',val:'bit.ly/trell-crew'},{type:'Instagram',val:'@trellsf'}],ts:n-1000*60*30,imIn:0,lat:40.3916,lng:-111.8508},
+    {id:3,tab:'casual',type:'findpickup',sport:'basketball',title:'Anyone running near Orem Saturday?',desc:"Free Saturday morning, looking for wherever there's a run. Down for 3v3 or 5v5. Intermediate level, 6 years playing.",location:'Orem / Provo area',when:'Saturday morning',fmt:'any',openGym:false,needed:null,host:'Kai',pos:'SG',skill:'Intermediate',contact:[{type:'Phone/Text',val:'385-555-2201'}],ts:n-1000*60*60*1.5,imIn:0,lat:40.2969,lng:-111.6946},
+    {id:4,tab:'ranked',type:'needplayers',sport:'basketball',title:'Need 2 for 5s — competitive run',desc:'Running a competitive 5v5 at LA Fitness on State. We have 8, need 2 more. Must hold your own.',location:'LA Fitness · State St, Salt Lake City',when:'Wednesday · 7:00 PM',fmt:'5v5',openGym:false,needed:2,host:'Dre',pos:'PF',skill:'Elite',age:'18+',contact:[{type:'Snapchat',val:'dre_hoops'},{type:'Phone/Text',val:'801-555-8877'}],ts:n-1000*60*60*3,imIn:0,lat:40.7608,lng:-111.8910},
+    {id:5,tab:'ranked',type:'findpickup',sport:'basketball',title:'Just moved here — tryna find a serious run',desc:'Played D3 ball, moved to Utah County from Houston. Looking for competitive pickup, 5v5 preferred.',location:'Utah County',when:'Any day this week',fmt:'5v5',openGym:false,needed:null,host:'Jamal',pos:'C',skill:'Elite',contact:[{type:'Email',val:'jamal@gmail.com'},{type:'Instagram',val:'@jamal_c'}],ts:n-1000*60*60*8,imIn:0,lat:40.2666,lng:-111.7410},
+    {id:6,tab:'casual',type:'needplayers',sport:'soccer',title:'Need 4 for 7v7 — Orem Soccer Complex',desc:'Running 7v7 this Sunday morning. Need 4 more players. All skill levels welcome, just come ready to run.',location:'Orem Soccer Complex, Orem UT',when:'Sunday · 9:00 AM',fmt:'any',openGym:false,needed:4,host:'Diego',pos:'Any',skill:'Intermediate',contact:[{type:'Instagram',val:'@diego_fc'},{type:'Phone/Text',val:'801-555-4433'}],ts:n-1000*60*90,imIn:0,lat:40.2991,lng:-111.7115},
+    {id:7,tab:'casual',type:'findpickup',sport:'football',title:'Looking for flag football game — weekends',desc:'Want to get into a flag football game. Available weekends. Have my own flags. Played rec league 3 years.',location:'Utah Valley',when:'Weekends',fmt:'any',openGym:false,needed:null,host:'Tyler',pos:'Any',skill:'Intermediate',contact:[{type:'Phone/Text',val:'801-555-9922'},{type:'Snapchat',val:'tyler_flags'}],ts:n-1000*60*60*2,imIn:0,lat:40.3502,lng:-111.7726},
+    {id:8,tab:'casual',type:'spot',sport:'volleyball',title:'Beach volleyball — East Bay sand courts',desc:'East Bay sand courts are open. Bring yourself, we always have extras. Usually 4-6 people show up Saturdays.',location:'East Bay Park, Provo UT',when:'Saturdays · 10:00 AM',fmt:'any',openGym:true,needed:null,host:'Mia',pos:'Any',skill:'Beginner',contact:[{type:'Instagram',val:'@mia_spikes'}],ts:n-1000*60*45,imIn:0,lat:40.2205,lng:-111.6463},
+    {id:9,tab:'casual',type:'needplayers',sport:'pickleball',title:'Need 2 more for doubles — Provo courts',desc:'Have 2, need 2. Intermediate level, super chill. Courts are open at the Provo Rec Center. Come ready to rally.',location:'Provo Recreation Center',when:'Friday · 5:30 PM',fmt:'any',openGym:false,needed:2,host:'Sandra',pos:'Any',skill:'Intermediate',contact:[{type:'Phone/Text',val:'801-555-3341'},{type:'Instagram',val:'@sandra_pkl'}],ts:n-1000*60*35,imIn:0,lat:40.2351,lng:-111.6611},
+    {id:10,tab:'casual',type:'findpickup',sport:'pickleball',title:'Anyone playing in Lehi this weekend?',desc:'New to the area, been playing for about a year. Looking for a relaxed doubles game Saturday or Sunday morning.',location:'Lehi / Pleasant Grove area',when:'This weekend',fmt:'any',openGym:false,needed:null,host:'Greg',pos:'Any',skill:'Beginner',contact:[{type:'Phone/Text',val:'385-555-7712'}],ts:n-1000*60*60*4,imIn:0,lat:40.3885,lng:-111.8490},
+    {id:11,tab:'casual',type:'spot',sport:'discgolf',title:'Timpanogos Disc Golf — casual round',desc:'Heading to Timp disc golf course Sunday afternoon. Open to anyone joining. Great beginner-friendly course.',location:'Timpanogos Park Disc Golf, Pleasant Grove UT',when:'Sunday · 1:00 PM',fmt:'any',openGym:true,needed:null,host:'Cole',pos:'Any',skill:'Beginner',contact:[{type:'Instagram',val:'@cole_disc'},{type:'Phone/Text',val:'801-555-0087'}],ts:n-1000*60*60*5,imIn:0,lat:40.3620,lng:-111.7398},
+    {id:12,tab:'ranked',type:'needplayers',sport:'discgolf',title:'Competitive singles round — need 2 more',desc:'Running a rated round at Cascade Fairways. Looking for 2 players rated 900+. Serious players only.',location:'Cascade Fairways Disc Golf, Orem UT',when:'Saturday · 8:00 AM',fmt:'any',openGym:false,needed:2,host:'Zach',pos:'Any',skill:'Elite',contact:[{type:'Snapchat',val:'zach_disc'},{type:'Email',val:'zach@gmail.com'}],ts:n-1000*60*60*6,imIn:0,lat:40.3115,lng:-111.7230},
+    {id:13,tab:'casual',type:'needplayers',sport:'baseball',title:'Need 3 for Sunday softball — SL County',desc:'Pickup softball game at Liberty Park Sunday. We have 15, need 3 more. All skill levels, bring your glove.',location:'Liberty Park, Salt Lake City UT',when:'Sunday · 11:00 AM',fmt:'any',openGym:false,needed:3,host:'Russ',pos:'Any',skill:'Intermediate',contact:[{type:'Phone/Text',val:'801-555-6621'},{type:'GroupMe',val:'bit.ly/russ-softball'}],ts:n-1000*60*55,imIn:0,lat:40.7484,lng:-111.8722},
+    {id:14,tab:'casual',type:'findpickup',sport:'baseball',title:'Looking for a casual catch or batting practice',desc:'Just moved to Provo, looking for people to throw with or find a batting cage group. Played high school ball.',location:'Provo / Orem area',when:'Flexible',fmt:'any',openGym:false,needed:null,host:'Aaron',pos:'Any',skill:'Intermediate',contact:[{type:'Instagram',val:'@aaron_bb'},{type:'Phone/Text',val:'385-555-4490'}],ts:n-1000*60*60*7,imIn:0,lat:40.2480,lng:-111.6700},
+    {id:15,tab:'casual',type:'spot',sport:'yoga',title:'Outdoor yoga — Provo River Trail',desc:'Free outdoor flow every Saturday morning at the river trail pavilion. All levels welcome — bring your mat and water. Vinyasa style, about 60 min.',location:'Provo River Trail Pavilion, Provo UT',when:'Saturdays · 8:00 AM',fmt:'any',openGym:true,needed:null,host:'Leila',pos:'Any',skill:'Beginner',contact:[{type:'Instagram',val:'@leila_flows'},{type:'Phone/Text',val:'801-555-2278'}],ts:n-1000*60*50,imIn:0,lat:40.2489,lng:-111.6457},
+    {id:16,tab:'casual',type:'needplayers',sport:'yoga',title:'Need 4 more for studio class share — Provo',desc:'Splitting a private studio session for a group flow class. Need 4 more people to fill spots. $10/person. Intermediate level, 75 min hot yoga.',location:'YogaWorks Studio, Provo UT',when:'Thursday · 6:30 PM',fmt:'any',openGym:false,needed:4,host:'Camille',pos:'Any',skill:'Intermediate',contact:[{type:'Instagram',val:'@camille_yoga'},{type:'Email',val:'camille@gmail.com'}],ts:n-1000*60*60*2.5,imIn:0,lat:40.2325,lng:-111.6590},
+  ];
+}
+
+function buildTicker(){
+  const items=TICKER_BY_SPORT[selectedSport]||TICKER_BY_SPORT.basketball;
+  const doubled=[...items,...items];
+  document.getElementById('ticker-track').innerHTML='<span class="ticker-label">Gear Up: </span>'+doubled.map(i=>`<a class="ticker-item" href="${i.url}" target="_blank" rel="noopener">${i.label}</a>`).join('');
+}
+
+function buildShop(){
+  const store=STORE_BY_SPORT[selectedSport]||STORE_BY_SPORT.basketball;
+  document.getElementById('shop-grid').innerHTML=store.map(p=>{
+    const url=p.url?(p.url+'?tag='+TAG):'https://www.amazon.com/s?k='+p.kw+'&tag='+TAG;
+    return`<a class="store-card" href="${url}" target="_blank" rel="noopener"><div class="store-cat">${p.cat}</div><div class="store-emoji">${p.emoji}</div><div class="store-name">${p.name}</div><div class="store-desc">${p.desc}</div><div class="store-price">${p.price}</div><span class="store-cta">Buy on Amazon →</span></a>`;
+  }).join('');
+}
+
+function openSportPicker(){
+  document.getElementById('sport-grid').innerHTML=SPORTS.map(s=>`<button class="sport-opt${s.id===selectedSport?' on':''}" onclick="selectSport('${s.id}')"><span class="s-icon">${s.icon}</span><span class="s-name">${s.label}</span></button>`).join('');
+  document.getElementById('modal-sport').classList.add('open');
+}
+
+function selectSport(id){
+  selectedSport=id;
+  LS.set('runs_sport',id);
+  closeModal('modal-sport');
+  const sp=getSport();
+  document.getElementById('sport-btn').textContent=sp.icon+' '+sp.label+' ▾';
+  buildTicker();buildShop();render();
+  if(currentView==='map')refreshMap();
+}
+
+function switchView(v){
+  currentView=v;
+  document.querySelectorAll('.view-section').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  const sa=document.getElementById('search-area'),tb=document.getElementById('tabs');
+  sa.style.display=v==='feed'?'':'none';
+  tb.style.display=v==='feed'?'':'none';
+  ['nav-shop','nav-map','nav-find'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  if(v==='shop')document.getElementById('nav-shop').classList.add('active');
+  else if(v==='map')document.getElementById('nav-map').classList.add('active');
+  else document.getElementById('nav-find').classList.add('active');
+  if(v==='map')initMap();
+}
+
+function initMap(){
+  if(!leafletMap){
+    leafletMap=L.map('map-container').setView([40.33,-111.75],10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(leafletMap);
+  }
+  refreshMap();
+  setTimeout(()=>leafletMap.invalidateSize(),150);
+}
+
+function refreshMap(){
+  if(!leafletMap)return;
+  mapMarkers.forEach(m=>leafletMap.removeLayer(m));
+  mapMarkers=[];
+  const toShow=posts.filter(p=>p.lat&&p.lng&&p.sport===selectedSport);
+  toShow.forEach(p=>{
+    const tm=TM[p.type]||TM.findpickup;
+    const gUrl='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.location||p.lat+','+p.lng);
+    const aUrl='https://maps.apple.com/?q='+encodeURIComponent(p.location||'');
+    const iAct=myImIns.includes(p.id);
+    const iLabel=(p.imIn||0)>0?"I'm In ("+p.imIn+")":"I'm In";
+    let ctHtml='';
+    if(p.contact&&p.contact.length){
+      ctHtml='<div style="display:flex;gap:5px;flex-wrap:wrap;margin:8px 0">'+p.contact.map(c=>{
+        let h='#';
+        if(c.type==='Phone/Text')h='tel:'+c.val.replace(/\D/g,'');
+        else if(c.type==='Email')h='mailto:'+c.val;
+        else if(c.type==='Snapchat')h='https://snapchat.com/add/'+c.val.replace('@','');
+        else if(c.type==='Instagram')h='https://instagram.com/'+c.val.replace('@','');
+        else if(c.val&&c.val.startsWith('http'))h=c.val;
+        return'<a href="'+h+'" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:#f3f4f6;border-radius:5px;padding:3px 8px;font-size:11px;color:#111827;text-decoration:none">'+(CI[c.type]||'🔗')+' '+c.val+'</a>';
+      }).join('')+'</div>';
+    }
+    const statusHtml=p.openGym
+      ?'<div style="font-size:11px;font-weight:600;background:#dcfce7;color:#16a34a;display:inline-block;padding:3px 8px;border-radius:12px;margin-bottom:6px">🟢 Open — all welcome</div>'
+      :p.needed?'<div style="font-size:11px;font-weight:600;background:#fef3c7;color:#d97706;display:inline-block;padding:3px 8px;border-radius:12px;margin-bottom:6px">👥 '+p.needed+' spot'+(p.needed>1?'s':'')+' needed</div>':'';
+    const popup=`
+      <div style="font-family:'DM Sans',sans-serif;min-width:220px;max-width:270px">
+        <div style="font-size:10px;font-weight:700;color:${tm.color};text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">${tm.label}</div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:5px;line-height:1.3">${p.title}</div>
+        <div style="font-size:11px;color:#6b7280;margin-bottom:4px">👤 ${p.host}${p.when?' &nbsp;·&nbsp; 📅 '+p.when:''}</div>
+        ${p.location?'<div style="font-size:11px;color:#6b7280;margin-bottom:6px">📍 '+p.location+'</div>':''}
+        ${statusHtml}
+        <div style="font-size:12px;color:#374151;line-height:1.45;margin-bottom:8px">${(p.desc||'').slice(0,100)}${(p.desc||'').length>100?'…':''}</div>
+        ${ctHtml}
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+          <a href="${gUrl}" target="_blank" style="background:#3b82f6;color:#fff;padding:4px 10px;border-radius:6px;text-decoration:none;font-size:11px;font-weight:700">🗺 Google</a>
+          <a href="${aUrl}" target="_blank" style="background:#555;color:#fff;padding:4px 10px;border-radius:6px;text-decoration:none;font-size:11px;font-weight:700">🍎 Apple</a>
+        </div>
+        <button onclick="viewPostFromMap(${p.id})" style="width:100%;padding:8px;background:#e85d04;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">View Full Post →</button>
+      </div>`;
+    const dot=L.circleMarker([p.lat,p.lng],{radius:11,fillColor:tm.color,color:'#fff',weight:2.5,opacity:1,fillOpacity:0.92}).addTo(leafletMap).bindPopup(popup,{maxWidth:290});
+    mapMarkers.push(dot);
+  });
+  const sp=getSport();
+  const legend=document.getElementById('map-legend');
+  const typeColors=Object.entries(TM).map(([k,v])=>`<div class="legend-row"><div class="legend-dot" style="background:${v.color}"></div><span>${v.label.replace(/\p{Emoji}/u,'').trim()}</span></div>`).join('');
+  legend.innerHTML=`<div class="map-legend-title">${sp.icon} ${sp.label} Runs</div>${typeColors}<div style="margin-top:6px;color:var(--text3);font-size:10px">${toShow.length} location${toShow.length!==1?'s':''} shown</div>`;
+}
+
+function viewPostFromMap(id){
+  const p=posts.find(x=>x.id===id);
+  if(!p)return;
+  switchView('feed');
+  if(p.tab!==activeTab)switchTab(p.tab);
+  setTimeout(()=>{
+    const el=document.querySelector('[data-post-id="'+id+'"]');
+    if(!el)return;
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    el.style.outline='2.5px solid #e85d04';
+    el.style.borderRadius='12px';
+    setTimeout(()=>{el.style.outline='';},2200);
+  },120);
+}
+
+function getGeoLocation(){
+  const btn=document.getElementById('btn-getloc'),st=document.getElementById('loc-status');
+  if(!navigator.geolocation){st.textContent='Geolocation not supported on this device.';return;}
+  btn.textContent='📍 Getting location…';
+  navigator.geolocation.getCurrentPosition(
+    pos=>{postDraft.lat=pos.coords.latitude;postDraft.lng=pos.coords.longitude;btn.textContent='✅ Location pinned';st.textContent=postDraft.lat.toFixed(4)+', '+postDraft.lng.toFixed(4)+' — will appear on map';},
+    ()=>{btn.textContent='📍 Use my location';st.textContent='Could not get location. Post still appears in feed.';}
+  );
+}
+
+function switchTab(t){
+  activeTab=t;
+  LS.set('runs_tab',t);
+  document.getElementById('tab-casual').className='tab-btn'+(t==='casual'?' active':'');
+  document.getElementById('tab-ranked').className='tab-btn'+(t==='ranked'?' active':'');
+  render();
+}
+
+function render(){
+  const now=Date.now();
+  Object.keys(boostedPosts).forEach(id=>{if(boostedPosts[id]<now)delete boostedPosts[id];});
+  saveBoosts();
+  const cut=now-7*24*3600*1000,before=posts.length;
+  posts=posts.filter(p=>p.ts>cut);
+  if(posts.length<before)savePosts();
+  if(!posts.length){posts=seed();savePosts();}
+  const q=(document.getElementById('search-input').value||'').toLowerCase().trim();
+  const sp=getSport();
+  let list=posts.filter(p=>p.tab===activeTab&&p.sport===selectedSport).filter(p=>!q||(p.location||'').toLowerCase().includes(q)||(p.title||'').toLowerCase().includes(q));
+  list.sort((a,b)=>{const aB=boostedPosts[a.id]>now?1:0,bB=boostedPosts[b.id]>now?1:0;if(aB!==bB)return bB-aB;return b.ts-a.ts;});
+  const feed=document.getElementById('feed');
+  if(!list.length){feed.innerHTML=`<div id="empty-state"><div class="empty-icon">${sp.icon}</div><div class="empty-title">No ${activeTab} ${sp.label} posts yet</div><div class="empty-sub">Be the first to drop something</div></div>`;return;}
+  let html='';
+  list.forEach((p,i)=>{
+    html+=cardHTML(p);
+    if((i+1)%4===0&&i<list.length-1)html+='<div class="ad-card"><div class="ad-label">Advertisement</div><ins class="adsbygoogle" style="display:block;width:100%" data-ad-client="ca-pub-XXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins></div>';
+  });
+  feed.innerHTML=html;
+  if(window.adsbygoogle){document.querySelectorAll('.adsbygoogle:not([data-adsbygoogle-status])').forEach(()=>{(window.adsbygoogle=window.adsbygoogle||[]).push({});});}
+}
+
+function cardHTML(p){
+  const tm=TM[p.type]||TM.findpickup,iMy=profile&&p.host===profile.name,iAct=myImIns.includes(p.id),isBoosted=boostedPosts[p.id]&&boostedPosts[p.id]>Date.now();
+  const sp=SPORTS.find(s=>s.id===p.sport)||SPORTS[0];
+  let badges='<span class="badge '+tm.cls+'">'+tm.label+'</span><span class="badge b-sport">'+sp.icon+' '+sp.label+'</span>';
+  if(p.age)badges+='<span class="badge b-age">👥 '+p.age+'</span>';
+  if(p.skill)badges+='<span class="badge b-skill">'+p.skill+'</span>';
+  if(p.fmt&&p.fmt!=='any')badges+='<span class="badge b-fmt">'+p.fmt+'</span>';
+  const loc=p.location?'<div class="card-location"><div class="loc-text">📍 '+p.location+'</div><a class="btn-maps" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.location)+'" target="_blank" rel="noopener">🗺 Maps</a></div>':'';
+  let st='';
+  if(p.openGym)st='<div class="card-status"><span class="status-pill status-open">🟢 Open — all welcome</span></div>';
+  else if(p.needed)st='<div class="card-status"><span class="status-pill status-spots">👥 '+p.needed+' spot'+(p.needed>1?'s':'')+' needed</span></div>';
+  let ct='';
+  if(p.contact&&p.contact.length){
+    ct='<div class="card-contacts">'+p.contact.map(c=>{
+      let h='#';
+      if(c.type==='Phone/Text')h='tel:'+c.val.replace(/\D/g,'');
+      else if(c.type==='Email')h='mailto:'+c.val;
+      else if(c.type==='Snapchat')h='https://snapchat.com/add/'+c.val.replace('@','');
+      else if(c.type==='Instagram')h='https://instagram.com/'+c.val.replace('@','');
+      else if(c.val&&c.val.startsWith('http'))h=c.val;
+      return'<a class="contact-chip" href="'+h+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+(CI[c.type]||'🔗')+' '+c.val+'</a>';
+    }).join('')+'</div>';
+  }
+  const iLabel=(p.imIn||0)>0?"I'm In ("+p.imIn+")":"I'm In";
+  const boost=iMy?'<button class="btn-boost'+(isBoosted?' active':'')+'" onclick="openBoostModal('+p.id+',event)">⚡ '+(isBoosted?'Boosted':'Boost')+'</button>':'';
+  const del=iMy?'<button class="btn-del" onclick="deletePost('+p.id+',event)">🗑 Delete</button>':'';
+  return'<div class="post-card'+(isBoosted?' boosted':'')+'" data-post-id="'+p.id+'"><div class="card-border" style="background:'+tm.color+'"></div><div class="card-body">'
+    +(isBoosted?'<div class="sponsored-tag">⚡ Sponsored</div>':'')
+    +'<div class="card-top"><div class="badges">'+badges+'</div><span class="card-ts">'+ago(p.ts)+'</span></div>'
+    +'<div class="card-title">'+p.title+'</div>'
+    +'<div class="card-user"><div class="avatar sm">'+p.host.slice(0,2).toUpperCase()+'</div><span class="user-name">'+p.host+(p.pos?' <span class="user-pos">'+p.pos+'</span>':'')+'</span></div>'
+    +(p.when?'<div class="card-when">📅 '+p.when+'</div>':'')
+    +'<div class="card-desc">'+p.desc+'</div>'
+    +loc+st+ct
+    +'<div class="card-actions"><button class="btn-imin'+(iAct?' active':'')+'" onclick="imIn('+p.id+',event)">'+iLabel+'</button><button class="btn-share-sm" onclick="sharePost('+p.id+',event)">🔗 Share</button>'+boost+del+'</div>'
+    +'<div class="card-footer"><div class="footer-user"><div class="avatar sm">'+p.host.slice(0,2).toUpperCase()+'</div><span class="footer-name">'+p.host+(p.pos?' <span class="footer-pos">'+p.pos+'</span>':'')+'</span></div>'
+    +'<span class="mode-pill '+(p.tab==='ranked'?'mode-ranked':'mode-casual')+'">'+(p.tab==='ranked'?'Ranked':'Casual')+'</span></div>'
+    +'</div></div>';
+}
+
+function imIn(id,e){if(e)e.stopPropagation();const p=posts.find(x=>x.id===id);if(!p)return;const i=myImIns.indexOf(id);if(i===-1){myImIns.push(id);p.imIn=(p.imIn||0)+1;privateStats.imins++;}else{myImIns.splice(i,1);p.imIn=Math.max(0,(p.imIn||1)-1);privateStats.imins=Math.max(0,privateStats.imins-1);}LS.set('runs_myimins',myImIns);savePosts();saveStats();render();}
+function sharePost(id,e){if(e)e.stopPropagation();const p=posts.find(x=>x.id===id);if(!p)return;const t=p.title+'\n'+p.desc+(p.location?'\n📍 '+p.location:'')+(p.when?'\n📅 '+p.when:'')+'\n\nFind more runs at runsports.netlify.app';if(navigator.share)navigator.share({title:p.title,text:t}).catch(()=>{});else navigator.clipboard.writeText(t).then(()=>alert('Copied to clipboard!')).catch(()=>{});}
+function deletePost(id,e){if(e)e.stopPropagation();if(!confirm('Delete this post?'))return;posts=posts.filter(p=>p.id!==id);savePosts();render();}
+
+let _boostPostId=null;
+function openBoostModal(id,e){
+  if(e)e.stopPropagation();
+  _boostPostId=id;
+  const now=Date.now(),active=boostedPosts[id]&&boostedPosts[id]>now;
+  document.getElementById('boost-body').innerHTML=
+    '<p style="font-size:13px;color:var(--text2);margin-bottom:12px">Boosted posts appear at the top of the feed with a Sponsored badge.</p>'
+    +(active?'<p style="font-size:12px;font-weight:600;color:var(--orange);margin-bottom:12px">⚡ Currently boosted — '+Math.ceil((boostedPosts[id]-now)/3600000)+'h remaining</p>':'')
+    +'<div style="display:flex;flex-direction:column;gap:8px">'
+    +'<button class="boost-opt" onclick="confirmBoost(24)"><span><div class="boost-opt-name">24 Hours</div><div class="boost-opt-sub">Short burst — great for today\'s game</div></span><span style="font-weight:700;color:var(--orange)">24h ⚡</span></button>'
+    +'<button class="boost-opt" onclick="confirmBoost(72)"><span><div class="boost-opt-name">3 Days</div><div class="boost-opt-sub">Keep it at the top through the weekend</div></span><span style="font-weight:700;color:var(--orange)">72h ⚡</span></button>'
+    +'<button class="boost-opt" onclick="confirmBoost(168)"><span><div class="boost-opt-name">7 Days</div><div class="boost-opt-sub">Max visibility for recurring games</div></span><span style="font-weight:700;color:var(--orange)">7d ⚡</span></button>'
+    +(active?'<button class="btn-secondary" style="margin-top:4px" onclick="removeBoost()">Remove Boost</button>':'')
+    +'</div>';
+  document.getElementById('modal-boost').classList.add('open');
+}
+function confirmBoost(hours){if(_boostPostId===null)return;boostedPosts[_boostPostId]=Date.now()+hours*3600000;saveBoosts();closeModal('modal-boost');render();}
+function removeBoost(){if(_boostPostId===null)return;delete boostedPosts[_boostPostId];saveBoosts();closeModal('modal-boost');render();}
+function clearSearch(){document.getElementById('search-input').value='';render();}
+
+function openPostModal(type){
+  postDraft={type,contacts:[],lat:null,lng:null};
+  document.querySelectorAll('#post-type-row .tgl-chip').forEach(b=>b.classList.remove('on'));
+  const tb=document.querySelector('#post-type-row .tgl-chip[onclick*="\''+type+'\'"]');
+  if(tb)tb.classList.add('on');
+  setPostType(type,null);
+  ['pm-title','pm-desc','pm-loc','pm-when','ct-type','ct-val'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('pm-fmt').value='any';
+  document.getElementById('pm-needed').value='3';
+  document.getElementById('cprev').innerHTML='';
+  document.getElementById('btn-getloc').textContent='📍 Use my location';
+  document.getElementById('loc-status').textContent='';
+  if(profile){document.getElementById('pm-host').value=profile.name||'';document.getElementById('pm-pos').value=profile.pos||'';document.getElementById('pm-skill').value=profile.skill||'Advanced';}
+  document.getElementById('modal-post').classList.add('open');
+}
+function setPostType(type,btn){
+  postDraft.type=type;
+  if(btn){document.querySelectorAll('#post-type-row .tgl-chip').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
+  const tm=TM[type]||TM.findpickup;
+  document.getElementById('mpost-title').textContent=tm.title;
+  document.getElementById('mpost-sub').textContent=tm.sub;
+  document.getElementById('pm-needed-wrap').style.display=(type==='needplayers'||type==='postpeople')?'block':'none';
+}
+function closeModal(id,e){if(!e||e.target===document.getElementById(id))document.getElementById(id).classList.remove('open');}
+function qc(type){document.getElementById('ct-type').value=type;document.getElementById('ct-val').focus();}
+function addContact(){const type=document.getElementById('ct-type').value.trim(),val=document.getElementById('ct-val').value.trim();if(!type||!val)return;postDraft.contacts.push({type,val});document.getElementById('ct-type').value='';document.getElementById('ct-val').value='';renderCprev();}
+function removeContact(i){postDraft.contacts.splice(i,1);renderCprev();}
+function renderCprev(){document.getElementById('cprev').innerHTML=postDraft.contacts.map((c,i)=>'<div class="cp-chip">'+(CI[c.type]||'🔗')+' '+c.type+': <strong>'+c.val+'</strong><button onclick="removeContact('+i+')">✕</button></div>').join('');}
+function submitPost(){
+  const title=document.getElementById('pm-title').value.trim(),host=document.getElementById('pm-host').value.trim();
+  if(!title||!host){alert('Need a title and your name.');return;}
+  if(!postDraft.contacts.length){alert('Add at least one contact method.');return;}
+  const p={id:Date.now(),tab:activeTab,type:postDraft.type,sport:selectedSport,title,desc:document.getElementById('pm-desc').value.trim(),location:document.getElementById('pm-loc').value.trim(),when:document.getElementById('pm-when').value.trim(),fmt:document.getElementById('pm-fmt').value,skill:document.getElementById('pm-skill').value,openGym:postDraft.type==='spot',needed:parseInt(document.getElementById('pm-needed').value)||null,host,pos:document.getElementById('pm-pos').value,contact:[...postDraft.contacts],ts:Date.now(),imIn:0,lat:postDraft.lat,lng:postDraft.lng};
+  posts.unshift(p);savePosts();privateStats.posted++;saveStats();
+  if(p.location){runHistory.places.unshift({name:p.location,type:p.type,when:p.when,date:new Date().toLocaleDateString()});if(runHistory.places.length>20)runHistory.places=runHistory.places.slice(0,20);saveHistory();}
+  closeModal('modal-post');render();
+}
+
+function openProfile(){renderProfileModal();document.getElementById('modal-profile').classList.add('open');}
+function renderProfileModal(){
+  const b=document.getElementById('profile-body');
+  if(!profile){b.innerHTML='<p style="color:#6b7280;margin-bottom:16px">No profile yet.</p><button class="btn-primary" onclick="closeModal(\'modal-profile\');document.getElementById(\'setup-screen\').classList.remove(\'hidden\')">Set Up Profile</button>';return;}
+  const mp=posts.filter(p=>p.host===profile.name);
+  const pl=runHistory.places.length?runHistory.places.slice(0,5).map(p=>'<div class="hist-item"><div class="hist-left"><span>📍</span><div><div class="hist-name">'+p.name+'</div><div class="hist-meta">'+p.type+(p.when?' · '+p.when:'')+'</div></div></div><span class="hist-date">'+p.date+'</span></div>').join(''):'<div class="hist-empty">No places yet</div>';
+  b.innerHTML='<div class="profile-banner"><div class="profile-av-lg">'+profile.name.slice(0,2).toUpperCase()+'</div><div><div class="profile-name">'+profile.name+'</div><div class="profile-sub">'+(profile.skill||'Player')+(profile.area?' · '+profile.area:'')+'</div></div></div>'
+    +'<div class="stat-row"><div class="stat-box"><div class="stat-n">'+privateStats.posted+'</div><div class="stat-l">Posted</div></div><div class="stat-box"><div class="stat-n">'+privateStats.imins+'</div><div class="stat-l">I\'m In</div></div><div class="stat-box"><div class="stat-n">'+myImIns.length+'</div><div class="stat-l">Runs Joined</div></div></div>'
+    +'<div class="section-head">Recent Places</div>'+pl
+    +'<div class="section-head">My Posts ('+mp.length+')</div>'
+    +(mp.length?mp.slice(0,4).map(p=>'<div class="hist-item"><div class="hist-left"><span>📍</span><div><div class="hist-name">'+p.title+'</div><div class="hist-meta">'+p.tab+' · '+p.sport+'</div></div></div><span class="hist-date">'+ago(p.ts)+'</span></div>').join(''):'<div class="hist-empty">No posts yet</div>')
+    +'<button class="btn-secondary" onclick="editProfile()">Edit Profile</button>';
+}
+function editProfile(){closeModal('modal-profile');document.getElementById('setup-screen').classList.remove('hidden');if(profile){document.getElementById('setup-name').value=profile.name||'';document.getElementById('setup-area').value=profile.area||'';}}
+function updateHdrAvatar(){if(!profile)return;document.getElementById('hdr-av').textContent=profile.name.slice(0,2).toUpperCase();}
+function setSetupSkill(sk,btn){setupSkill=sk;document.querySelectorAll('#setup-skill-seg .seg-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
+function saveSetup(){
+  const name=document.getElementById('setup-name').value.trim();
+  if(!name){alert('Enter your name.');return;}
+  selectedSport=document.getElementById('setup-sport').value;
+  LS.set('runs_sport',selectedSport);
+  profile={name,area:document.getElementById('setup-area').value.trim(),skill:setupSkill};
+  LS.set('runs_profile',profile);
+  document.getElementById('setup-screen').classList.add('hidden');
+  updateHdrAvatar();
+  const sp=getSport();
+  document.getElementById('sport-btn').textContent=sp.icon+' '+sp.label+' ▾';
+  buildTicker();buildShop();render();
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')['modal-post','modal-profile','modal-sport','modal-boost','modal-tos','modal-privacy'].forEach(id=>document.getElementById(id).classList.remove('open'));
+  if(e.key==='Enter'&&document.activeElement.id==='ct-val')addContact();
+});
+
+const initSp=getSport();
+document.getElementById('sport-btn').textContent=initSp.icon+' '+initSp.label+' ▾';
+buildTicker();
+buildShop();
+if(profile){document.getElementById('setup-screen').classList.add('hidden');updateHdrAvatar();}
+switchTab(activeTab);
+setInterval(render,60000);
+</script>
+</body>
+</html>
