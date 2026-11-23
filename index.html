@@ -887,17 +887,22 @@ function renderPostContacts(){
 
 async function submitPost(){
   const title=document.getElementById('p-title').value.trim();
-  if(!title){showToast('Add a game or spot title');return;}
   const sport=document.getElementById('p-sport').value;
   const customSport=sport==='other' ? document.getElementById('p-custom-sport').value.trim() : '';
-  if(sport==='other' && !customSport){showToast('Enter a custom activity name');return;}
   const loc=document.getElementById('p-loc').value.trim();
   const whenInput=document.getElementById('p-when').value;
-  const scheduledAt=whenInput ? new Date(whenInput).getTime() : Date.now();
-  const whenLabel=whenInput ? new Date(scheduledAt).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : 'Today';
-  const desc=document.getElementById('p-desc').value.trim();
   const pendingContact=document.getElementById('p-cval').value.trim();
-  const finalContacts=pendingContact ? [...postContacts, pendingContact].slice(0,3) : [...postContacts];
+
+  if(!title){showToast('Please enter a post title');return;}
+  if(sport==='other' && !customSport){showToast('Please enter a custom activity name');return;}
+  if(!loc){showToast('Please enter a location, park, or address');return;}
+  if(!whenInput){showToast('Please choose a date and time');return;}
+  if(pendingContact){showToast('Please click the + button to add your contact info');return;}
+
+  const scheduledAt=new Date(whenInput).getTime();
+  const whenLabel=new Date(scheduledAt).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+  const desc=document.getElementById('p-desc').value.trim();
+  const finalContacts=[...postContacts].slice(0,3);
 
   const newPost={
     id:'post_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
