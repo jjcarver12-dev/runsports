@@ -38,8 +38,8 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
 .search-wrap{flex:1;display:flex;align-items:center;background:#f3f4f6;border-radius:24px;padding:0 16px;gap:8px}
 .search-wrap input{flex:1;background:none;border:none;outline:none;font-size:14px;color:var(--text);padding:10px 0;font-family:inherit}
 .search-wrap input::placeholder{color:var(--text3)}
-.btn-pin{width:40px;height:40px;border-radius:50%;background:#fce7f3;border:none;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0}
-.btn-filter{background:none;border:none;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;padding:4px 8px;white-space:nowrap;font-family:inherit}
+.btn-clear{background:#e5e7eb;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer;color:var(--text2);display:none;align-items:center;justify-content:center;flex-shrink:0}
+.btn-clear.visible{display:flex}
 #tabs{background:#fff;display:flex;border-bottom:1px solid var(--border);max-width:640px;margin:0 auto}
 .tab-btn{flex:1;padding:14px;background:none;border:none;font-size:15px;font-weight:600;color:var(--text2);cursor:pointer;position:relative;font-family:inherit}
 .tab-btn.active{color:var(--orange)}
@@ -49,7 +49,8 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
 #view-map{height:calc(100vh - 210px);min-height:300px}
 #map-container{width:100%;height:100%}
 #feed{max-width:640px;margin:0 auto;padding:12px 12px 20px;display:flex;flex-direction:column;gap:10px}
-.post-card{background:var(--card);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden;display:flex}
+.post-card{background:var(--card);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden;display:flex;cursor:pointer;transition:box-shadow .15s}
+.post-card:hover{box-shadow:0 3px 8px rgba(0,0,0,.12)}
 .card-border{width:4px;flex-shrink:0}
 .card-body{flex:1;padding:14px;min-width:0}
 .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px}
@@ -73,14 +74,10 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
 .card-location{display:flex;align-items:center;justify-content:space-between;background:#f9fafb;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:8px;gap:8px}
 .loc-text{font-size:12px;color:var(--text2);flex:1}
 .btn-maps{display:flex;align-items:center;gap:4px;background:var(--blue);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap;flex-shrink:0;font-family:inherit}
-.card-status{margin-bottom:8px}
-.status-pill{font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;display:inline-block}
-.status-open{background:#dcfce7;color:#16a34a}
-.status-spots{background:#fef3c7;color:#d97706}
 .card-contacts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 .contact-chip{display:flex;align-items:center;gap:5px;background:#f3f4f6;border-radius:6px;padding:5px 10px;font-size:12px;color:var(--text);font-weight:500;text-decoration:none;cursor:pointer;transition:background .15s}
 .contact-chip:hover{background:#e5e7eb}
-.card-actions{display:flex;gap:6px;margin-bottom:10px}
+.card-actions{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 .btn-imin{background:none;border:1.5px solid var(--green);color:var(--green);border-radius:6px;padding:5px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
 .btn-imin:hover,.btn-imin.active{background:#dcfce7}
 .btn-share-sm{background:none;border:1.5px solid var(--border);color:var(--text2);border-radius:6px;padding:5px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
@@ -93,7 +90,7 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
 .footer-pos{font-size:11px;color:var(--text2);font-weight:400}
 .mode-pill{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
 .mode-casual{background:#dcfce7;color:#16a34a}
-.mode-ranked{background:#fee2e2;color:#dc2626}
+.mode-rated{background:#fee2e2;color:#dc2626}
 #empty-state{padding:60px 20px;text-align:center}
 .empty-icon{font-size:48px;margin-bottom:12px;opacity:.4}
 .empty-title{font-size:18px;font-weight:700;color:var(--text2);margin-bottom:6px}
@@ -227,6 +224,8 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
 .boost-opt:hover{border-color:var(--orange)}
 .boost-opt-name{font-size:14px;font-weight:700}
 .boost-opt-sub{font-size:12px;color:var(--text2)}
+.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:600;z-index:600;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
 </style>
 </head>
 <body>
@@ -250,26 +249,27 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
           <option value="baseball">⚾ Baseball</option>
           <option value="yoga">🧘 Yoga</option>
           <option value="running">🏃 Running</option>
+          <option value="other">✨ Other</option>
         </select>
       </div>
       <div class="field"><label>City / Area</label><input id="setup-area" placeholder="e.g. Provo, UT" maxlength="40"></div>
     </div>
     <div class="field"><label>Skill Level</label>
       <div class="seg" id="setup-skill-seg">
-        <button class="seg-btn" onclick="setSetupSkill('Beginner',this)">Beginner</button>
-        <button class="seg-btn" onclick="setSetupSkill('Intermediate',this)">Intermediate</button>
-        <button class="seg-btn on" onclick="setSetupSkill('Advanced',this)">Advanced</button>
-        <button class="seg-btn" onclick="setSetupSkill('Elite',this)">Elite</button>
+        <button type="button" class="seg-btn" onclick="setSetupSkill('Beginner',this)">Beginner</button>
+        <button type="button" class="seg-btn" onclick="setSetupSkill('Intermediate',this)">Intermediate</button>
+        <button type="button" class="seg-btn on" onclick="setSetupSkill('Advanced',this)">Advanced</button>
+        <button type="button" class="seg-btn" onclick="setSetupSkill('Elite',this)">Elite</button>
       </div>
     </div>
-    <button class="btn-primary" onclick="saveSetup()">Let's Go 🏀</button>
+    <button type="button" class="btn-primary" onclick="saveSetup()">Let's Go 🏀</button>
   </div>
 </div>
 
 <header id="hdr">
   <div class="logo">🏀 Runs <span>.</span></div>
   <div class="hdr-right">
-    <button class="sport-btn" id="sport-btn" onclick="openSportPicker()">🏀 Basketball ▾</button>
+    <button type="button" class="sport-btn" id="sport-btn" onclick="openSportPicker()">🏀 Basketball ▾</button>
     <div class="avatar" id="hdr-av" onclick="openProfile()">?</div>
   </div>
 </header>
@@ -279,15 +279,14 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
 <div id="search-area">
   <div class="search-wrap">
     <span style="color:#9ca3af;font-size:16px">🔍</span>
-    <input id="search-input" placeholder="Search city or zip code..." oninput="render()">
+    <input id="search-input" placeholder="Search city, zip code, or sport..." oninput="toggleClearBtn();render()">
+    <button type="button" class="btn-clear" id="btn-clear" onclick="clearSearch()" title="Clear search">✕</button>
   </div>
-  <button class="btn-pin" onclick="clearSearch()">📍</button>
-  <button class="btn-filter">Filter</button>
 </div>
 
 <div id="tabs">
-  <button class="tab-btn active" id="tab-casual" onclick="switchTab('casual')">Casual</button>
-  <button class="tab-btn" id="tab-ranked" onclick="switchTab('ranked')">Ranked</button>
+  <button type="button" class="tab-btn active" id="tab-casual" onclick="switchTab('casual')">Casual</button>
+  <button type="button" class="tab-btn" id="tab-rated" onclick="switchTab('rated')">Rated</button>
 </div>
 
 <div class="view-section active" id="view-feed">
@@ -313,9 +312,9 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
   Runs™ is the property of its creator. Unauthorized reproduction or use is prohibited.<br>
   <span style="margin-top:4px;display:inline-block">jjcarver12-dev.github.io/runsports</span><br>
   <span style="margin-top:8px;display:inline-block">
-    <button onclick="document.getElementById('modal-tos').classList.add('open')" style="background:none;border:none;color:var(--orange);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:underline">Terms of Service</button>
+    <button type="button" onclick="document.getElementById('modal-tos').classList.add('open')" style="background:none;border:none;color:var(--orange);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:underline">Terms of Service</button>
     &nbsp;·&nbsp;
-    <button onclick="document.getElementById('modal-privacy').classList.add('open')" style="background:none;border:none;color:var(--orange);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:underline">Privacy Policy</button>
+    <button type="button" onclick="document.getElementById('modal-privacy').classList.add('open')" style="background:none;border:none;color:var(--orange);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:underline">Privacy Policy</button>
   </span>
 </footer>
 
@@ -324,7 +323,7 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
     <div class="modal-handle"></div>
     <div class="modal-head">
       <div><div class="modal-title">Terms of Service</div><div class="modal-sub">Last updated May 2026</div></div>
-      <button class="btn-close" onclick="closeModal('modal-tos')">✕</button>
+      <button type="button" class="btn-close" onclick="closeModal('modal-tos')">✕</button>
     </div>
     <div class="modal-body" style="font-size:13px;color:var(--text2);line-height:1.7;display:block">
       <p><strong style="color:var(--text)">1. Acceptance</strong><br>By using Runs you agree to these terms. If you do not agree, do not use the app.</p>
@@ -345,10 +344,10 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
     <div class="modal-handle"></div>
     <div class="modal-head">
       <div><div class="modal-title">Privacy Policy</div><div class="modal-sub">Last updated May 2026</div></div>
-      <button class="btn-close" onclick="closeModal('modal-privacy')">✕</button>
+      <button type="button" class="btn-close" onclick="closeModal('modal-privacy')">✕</button>
     </div>
     <div class="modal-body" style="font-size:13px;color:var(--text2);line-height:1.7;display:block">
-      <p><strong style="color:var(--text)">1. What We Collect</strong><br>Runs stores your profile name, sport preference, skill level, and posts you create. This data is stored locally on your device only — it is never sent to a server.</p>
+      <p><strong style="color:var(--text)">1. What We Collect</strong><br>Runs stores your profile name, sport preference, skill level, and posts you create. Posts and comments sync through Supabase so players across devices can see active games.</p>
       <p style="margin-top:12px"><strong style="color:var(--text)">2. How We Use It</strong><br>Your information is used only to show you relevant posts and remember your preferences within the app. We do not sell, share, or transfer your data to any third party.</p>
       <p style="margin-top:12px"><strong style="color:var(--text)">3. Cookies & Advertising</strong><br>Runs uses Google AdSense to display ads. Google may use cookies to show you relevant ads based on your browsing. You can opt out at <a href="https://adssettings.google.com" target="_blank" style="color:var(--orange)">adssettings.google.com</a>.</p>
       <p style="margin-top:12px"><strong style="color:var(--text)">4. Amazon Affiliate</strong><br>Links in the Gear Shop are Amazon affiliate links. Amazon may use cookies when you click these links. See Amazon's privacy policy at amazon.com/privacy.</p>
@@ -361,11 +360,11 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
 </div>
 
 <nav id="bottom-nav">
-  <button class="nav-item" id="nav-shop" onclick="switchView('shop')"><span class="nav-icon">🛒</span><span class="nav-lbl">Shop</span></button>
-  <button class="nav-item" id="nav-map" onclick="switchView('map')"><span class="nav-icon">🗺️</span><span class="nav-lbl">Map</span></button>
-  <button class="nav-create" onclick="openPostModal('findpickup')">+</button>
-  <button class="nav-item active" id="nav-find" onclick="switchView('feed')"><span class="nav-icon">🔍</span><span class="nav-lbl">Find</span></button>
-  <button class="nav-item" id="nav-profile" onclick="openProfile()"><span class="nav-icon">👤</span><span class="nav-lbl">Profile</span></button>
+  <button type="button" class="nav-item" id="nav-shop" onclick="switchView('shop')"><span class="nav-icon">🛒</span><span class="nav-lbl">Shop</span></button>
+  <button type="button" class="nav-item" id="nav-map" onclick="switchView('map')"><span class="nav-icon">🗺️</span><span class="nav-lbl">Map</span></button>
+  <button type="button" class="nav-create" onclick="openPostModal('findpickup')">+</button>
+  <button type="button" class="nav-item active" id="nav-find" onclick="switchView('feed')"><span class="nav-icon">🔍</span><span class="nav-lbl">Find</span></button>
+  <button type="button" class="nav-item" id="nav-profile" onclick="openProfile()"><span class="nav-icon">👤</span><span class="nav-lbl">Profile</span></button>
 </nav>
 
 <div class="overlay" id="modal-post" onclick="closeModal('modal-post',event)">
@@ -373,62 +372,56 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
     <div class="modal-handle"></div>
     <div class="modal-head">
       <div><div class="modal-title" id="mpost-title">Post</div><div class="modal-sub" id="mpost-sub"></div></div>
-      <button class="btn-close" onclick="closeModal('modal-post')">✕</button>
+      <button type="button" class="btn-close" onclick="closeModal('modal-post')">✕</button>
     </div>
     <div class="modal-body">
       <div class="field"><label>Type</label>
         <div class="tgl-row" id="post-type-row">
-          <button class="tgl-chip on" onclick="setPostType('findpickup',this)">🔍 Find Pickup</button>
-          <button class="tgl-chip" onclick="setPostType('needplayers',this)">👥 Need Players</button>
-          <button class="tgl-chip" onclick="setPostType('spot',this)">📍 Post a Spot</button>
-          <button class="tgl-chip" onclick="setPostType('postpeople',this)">🤙 Got People</button>
+          <button type="button" class="tgl-chip on" onclick="setPostType('findpickup',this)">🔍 Find Pickup</button>
+          <button type="button" class="tgl-chip" onclick="setPostType('needplayers',this)">👥 Need Players</button>
+          <button type="button" class="tgl-chip" onclick="setPostType('spot',this)">📍 Post a Spot</button>
+          <button type="button" class="tgl-chip" onclick="setPostType('postpeople',this)">🤙 Go</button>
         </div>
-      </div>
-      <div class="field"><label>Title</label><input id="pm-title" placeholder="Short and clear" maxlength="80"></div>
-      <div class="field"><label>Details</label><textarea id="pm-desc" rows="3" placeholder="Skill level, vibe, what you need..."></textarea></div>
-      <div class="g2">
-        <div class="field"><label>Location</label><input id="pm-loc" placeholder="Court, gym, city..."></div>
-        <div class="field"><label>When</label><input id="pm-when" placeholder="Tonight, Sat AM..."></div>
-      </div>
-      <div class="field">
-        <label>Pin to Map</label>
-        <button class="btn-loc" id="btn-getloc" onclick="getGeoLocation()">📍 Use my location</button>
-        <div id="loc-status" style="font-size:11px;color:var(--text2);margin-top:4px"></div>
       </div>
       <div class="g2">
-        <div class="field"><label>Format</label>
-          <select id="pm-fmt"><option value="any">Any / Open</option><option value="3v3">3v3</option><option value="4v4">4v4</option><option value="5v5">5v5</option></select>
+        <div class="field"><label>Sport</label>
+          <select id="p-sport" onchange="toggleCustomSportInput()">
+            <option value="basketball">🏀 Basketball</option>
+            <option value="football">🏈 Football</option>
+            <option value="soccer">⚽ Soccer</option>
+            <option value="volleyball">🏐 Volleyball</option>
+            <option value="tennis">🎾 Tennis</option>
+            <option value="pickleball">🏓 Pickleball</option>
+            <option value="discgolf">🥏 Disc Golf</option>
+            <option value="baseball">⚾ Baseball</option>
+            <option value="yoga">🧘 Yoga</option>
+            <option value="running">🏃 Running</option>
+            <option value="other">✨ Other</option>
+          </select>
         </div>
-        <div class="field"><label>Skill Level</label>
-          <select id="pm-skill"><option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="Advanced" selected>Advanced</option><option value="Elite">Elite</option></select>
+        <div class="field"><label>Game Type</label>
+          <div class="seg" id="p-mode-seg">
+            <button type="button" class="seg-btn on" onclick="setPostMode('casual',this)">Casual</button>
+            <button type="button" class="seg-btn" onclick="setPostMode('rated',this)">Rated</button>
+          </div>
         </div>
       </div>
-      <div class="field" id="pm-needed-wrap" style="display:none"><label># Players Needed</label><input type="number" id="pm-needed" min="1" max="30" value="3"></div>
+      <div class="field" id="custom-sport-wrap" style="display:none">
+        <label>Custom Activity Name</label>
+        <input id="p-custom-sport" placeholder="e.g. Spikeball, Ultimate Frisbee, Pickleball Doubles..." maxlength="40">
+      </div>
+      <div class="field"><label>Title</label><input id="p-title" placeholder="e.g. 5v5 at Riverside Park" maxlength="60"></div>
+      <div class="field"><label>Location / Park / Address</label><input id="p-loc" placeholder="Park name, court, or city & zip..." maxlength="80"></div>
+      <div class="field"><label>When (auto-expires 24 hours after scheduled time)</label><input type="datetime-local" id="p-when"></div>
+      <div class="field"><label>Notes</label><textarea id="p-desc" rows="2" placeholder="Format, rules, skill level, what to bring..." maxlength="300"></textarea></div>
       <hr class="divider">
-      <div class="sec-label">Your Info</div>
-      <div class="g2">
-        <div class="field"><label>Name / Handle</label><input id="pm-host" placeholder="@handle" maxlength="30"></div>
-        <div class="field"><label>Position</label>
-          <select id="pm-pos"><option value="">—</option><option>PG</option><option>SG</option><option>SF</option><option>PF</option><option>C</option><option>Any</option></select>
-        </div>
-      </div>
-      <hr class="divider">
-      <div class="sec-label">How to Reach You</div>
-      <div class="tgl-row" style="margin-bottom:8px">
-        <button class="tgl-chip" style="font-size:12px" onclick="qc('Phone/Text')">📱 Phone</button>
-        <button class="tgl-chip" style="font-size:12px" onclick="qc('Email')">📧 Email</button>
-        <button class="tgl-chip" style="font-size:12px" onclick="qc('Snapchat')">👻 Snap</button>
-        <button class="tgl-chip" style="font-size:12px" onclick="qc('Instagram')">📸 IG</button>
-        <button class="tgl-chip" style="font-size:12px" onclick="qc('GroupMe')">💬 GroupMe</button>
-        <button class="tgl-chip" style="font-size:12px" onclick="qc('Other')">🔗 Other</button>
-      </div>
+      <div class="sec-label">Contact Info (Optional)</div>
       <div class="cadd">
-        <input id="ct-type" placeholder="Type" style="max-width:130px">
-        <input id="ct-val" placeholder="Username / number / link">
-        <button class="btn-add" onclick="addContact()">+</button>
+        <input id="p-cval" placeholder="Instagram @handle, phone, or email">
+        <button type="button" class="btn-add" onclick="addPostContact()">+</button>
       </div>
-      <div class="cprev" id="cprev"></div>
-      <button class="btn-primary" onclick="submitPost()">Post It</button>
+      <div class="cprev" id="p-cprev"></div>
+      <button type="button" class="btn-primary" onclick="submitPost()">Post</button>
     </div>
   </div>
 </div>
@@ -437,10 +430,33 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
     <div class="modal-head">
-      <div><div class="modal-title">My Profile</div></div>
-      <button class="btn-close" onclick="closeModal('modal-profile')">✕</button>
+      <div><div class="modal-title">Profile</div></div>
+      <button type="button" class="btn-close" onclick="closeModal('modal-profile')">✕</button>
     </div>
     <div class="modal-body" id="profile-body"></div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-edit" onclick="closeModal('modal-edit',event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div><div class="modal-title">Edit Profile</div></div>
+      <button type="button" class="btn-close" onclick="closeModal('modal-edit')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Name</label><input id="e-name" maxlength="30"></div>
+      <div class="field"><label>City / Area</label><input id="e-area" placeholder="e.g. Provo, UT" maxlength="40"></div>
+      <div class="field"><label>Skill Level</label>
+        <div class="seg" id="e-skill-seg">
+          <button type="button" class="seg-btn" onclick="setEditSkill('Beginner',this)">Beginner</button>
+          <button type="button" class="seg-btn" onclick="setEditSkill('Intermediate',this)">Intermediate</button>
+          <button type="button" class="seg-btn" onclick="setEditSkill('Advanced',this)">Advanced</button>
+          <button type="button" class="seg-btn" onclick="setEditSkill('Elite',this)">Elite</button>
+        </div>
+      </div>
+      <button type="button" class="btn-primary" onclick="saveEdit()">Save Profile</button>
+    </div>
   </div>
 </div>
 
@@ -448,8 +464,8 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
     <div class="modal-head">
-      <div><div class="modal-title">Pick an Activity</div></div>
-      <button class="btn-close" onclick="closeModal('modal-sport')">✕</button>
+      <div><div class="modal-title">Choose Sport</div></div>
+      <button type="button" class="btn-close" onclick="closeModal('modal-sport')">✕</button>
     </div>
     <div class="modal-body">
       <div class="sport-grid" id="sport-grid"></div>
@@ -457,533 +473,830 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
   </div>
 </div>
 
-<!-- AdSense: replace ca-pub-XXXXXXXXXX with your publisher ID from Google AdSense dashboard -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXX" crossorigin="anonymous"></script>
-
 <div class="overlay" id="modal-boost" onclick="closeModal('modal-boost',event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
     <div class="modal-head">
-      <div><div class="modal-title">⚡ Boost Post</div><div class="modal-sub">Pin to top of the feed with a Sponsored badge</div></div>
-      <button class="btn-close" onclick="closeModal('modal-boost')">✕</button>
+      <div><div class="modal-title">🚀 Boost Post</div><div class="modal-sub">Pin to top of the feed</div></div>
+      <button type="button" class="btn-close" onclick="closeModal('modal-boost')">✕</button>
     </div>
     <div class="modal-body" id="boost-body"></div>
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const LS={get:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
-let profile=LS.get('runs_profile',null),posts=LS.get('runs_posts',[]),runHistory=LS.get('runs_history',{places:[]}),activeTab=LS.get('runs_tab','casual'),myImIns=LS.get('runs_myimins',[]),privateStats=LS.get('runs_stats',{posted:0,imins:0}),postComments=LS.get('runs_comments',{}),postDraft={type:'findpickup',contacts:[],lat:null,lng:null},setupSkill='Advanced',currentView='feed',selectedSport=LS.get('runs_sport','basketball'),leafletMap=null,mapMarkers=[],boostedPosts=LS.get('runs_boosts',{});
+const SUPABASE_URL = 'https://xoefiexledipjuzqngek.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_2MsncCq86h0pOTxUHg1uhQ_ss0IPxxo';
 
-const SPORTS=[
-  {id:'basketball',label:'Basketball',icon:'🏀'},
-  {id:'football',label:'Football',icon:'🏈'},
-  {id:'soccer',label:'Soccer',icon:'⚽'},
-  {id:'volleyball',label:'Volleyball',icon:'🏐'},
-  {id:'tennis',label:'Tennis',icon:'🎾'},
-  {id:'pickleball',label:'Pickleball',icon:'🏓'},
-  {id:'discgolf',label:'Disc Golf',icon:'🥏'},
-  {id:'baseball',label:'Baseball',icon:'⚾'},
-  {id:'yoga',label:'Yoga',icon:'🧘'},
-  {id:'running',label:'Running',icon:'🏃'},
+const STORE_ITEMS = [
+  {cat:'🏀 Basketball',emoji:'🏀',name:'Wilson Evolution Indoor Game Basketball',desc:'Microfiber composite leather, deep channels, official 29.5" size.',price:'$64.99',asin:'B0000BYA66'},
+  {cat:'🏀 Basketball',emoji:'👟',name:'Nike Lebron Witness 8 Court Shoes',desc:'Max Air cushioning and herringbone outsole for hard court traction.',price:'$109.99',asin:'B0C8B8Y2X3'},
+  {cat:'⚽ Soccer',emoji:'⚽',name:'Adidas Finale / Champions League Match Ball',desc:'Thermally bonded seamless surface for true flight and touch.',price:'$39.99',asin:'B0B6H6R3G4'},
+  {cat:'🏈 Football',emoji:'🏈',name:'Wilson GST Official Composite Football',desc:'Tackified composite leather with double laces for crisp spiral grip.',price:'$49.99',asin:'B0000BYA6B'},
+  {cat:'🏐 Volleyball',emoji:'🏐',name:'Mikasa V200W Official Indoor Volleyball',desc:'18-panel aerodynamic design with double-dimple microfiber.',price:'$69.99',asin:'B07Y8H3K5M'},
+  {cat:'🏓 Pickleball',emoji:'🏓',name:'Selkirk SLK Halo Carbon Fiber Paddle',desc:'Raw T700 carbon face with Rev-Core polymer honeycomb core.',price:'$99.99',asin:'B0C5S3G8J2'},
+  {cat:'🎾 Tennis',emoji:'🎾',name:'Wilson US Open Extra Duty Tennis Balls (3-Pack)',desc:'Standard USTA tournament felt for hard and clay courts.',price:'$8.99',asin:'B0000BYA6E'},
+  {cat:'🥏 Disc Golf',emoji:'🥏',name:'Innova Champion Starter 3-Disc Set',desc:'Driver, midrange, and putter in durable Champion plastic.',price:'$34.99',asin:'B000V9C5E2'},
+  {cat:'🧘 Yoga',emoji:'🧘',name:'Manduka PRO Yoga Mat 6mm',desc:'High-density cushioning with closed-cell top to block moisture.',price:'$129.99',asin:'B000K538Z6'},
+  {cat:'🏃 Running',emoji:'🏃',name:'Nathan Peak Hydration Vest 12L',desc:'Lightweight breathable vest with soft flasks for long runs.',price:'$84.99',asin:'B084D7K6P2'},
+  {cat:'💧 Hydration',emoji:'💧',name:'Hydro Flask 32 oz Wide Mouth Bottle',desc:'TempShield double-wall vacuum insulation keeps ice cold 24 hrs.',price:'$44.95',asin:'B082P3S7T1'},
+  {cat:'🎒 Gear Bag',emoji:'🎒',name:'Under Armour Undeniable 5.0 Duffel Medium',desc:'UA Storm water-resistant finish with ventilated shoe/laundry pocket.',price:'$44.99',asin:'B0987K3X4N'}
 ];
 
-const TAG='runsapp-20';
-
-const TICKER_BY_SPORT={
-  basketball:[
-    {label:'🏀 NBA Ball $149',url:'https://www.amazon.com/Wilson-NBA-Official-Game-Basketball/dp/B098TYD4BZ/?tag='+TAG},
-    {label:'💧 Gatorade 36-pk $28',url:'https://www.amazon.com/s?k=gatorade+variety+pack&tag='+TAG},
-    {label:'👟 Shoes from $89',url:'https://www.amazon.com/s?k=basketball+shoes+men&tag='+TAG},
-    {label:'🎒 Ball Bag $45',url:'https://www.amazon.com/WILSON-NBA-Authentic-Basketball-Backpack/dp/B099SG5113/?tag='+TAG},
-    {label:'🦵 Ankle Brace $18',url:'https://www.amazon.com/Ankle-Brace-Adjustable-Compression-Basketball/dp/B071NMBSVS/?tag='+TAG},
-    {label:'💨 Ball Pump $10',url:'https://www.amazon.com/Ball-Pump-Needles-Nozzle-Inflatables/dp/B095LDKLCK/?tag='+TAG},
-  ],
-  soccer:[
-    {label:'⚽ Soccer Ball $30',url:'https://www.amazon.com/s?k=soccer+ball+outdoor&tag='+TAG},
-    {label:'👟 Cleats from $40',url:'https://www.amazon.com/s?k=soccer+cleats+men&tag='+TAG},
-    {label:'🧤 GK Gloves $25',url:'https://www.amazon.com/s?k=goalkeeper+gloves&tag='+TAG},
-    {label:'🦺 Pinnies $15',url:'https://www.amazon.com/s?k=soccer+pinnies+vest+set&tag='+TAG},
-    {label:'🛡 Shin Guards $15',url:'https://www.amazon.com/s?k=soccer+shin+guards&tag='+TAG},
-  ],
-  football:[
-    {label:'🏈 Football $30',url:'https://www.amazon.com/s?k=football+official+size&tag='+TAG},
-    {label:'🚩 Flag Set $20',url:'https://www.amazon.com/s?k=flag+football+set&tag='+TAG},
-    {label:'🧤 Receiver Gloves $25',url:'https://www.amazon.com/s?k=football+receiver+gloves&tag='+TAG},
-    {label:'👟 Cleats from $40',url:'https://www.amazon.com/s?k=football+cleats+men&tag='+TAG},
-  ],
-  volleyball:[
-    {label:'🏐 Volleyball $25',url:'https://www.amazon.com/s?k=volleyball+outdoor&tag='+TAG},
-    {label:'🩱 Knee Pads $18',url:'https://www.amazon.com/s?k=volleyball+knee+pads&tag='+TAG},
-    {label:'🕶 Sport Shades $20',url:'https://www.amazon.com/s?k=sports+sunglasses+polarized&tag='+TAG},
-    {label:'🏖 Beach Net $60',url:'https://www.amazon.com/s?k=beach+volleyball+net+portable&tag='+TAG},
-  ],
-  tennis:[
-    {label:'🎾 Racket from $50',url:'https://www.amazon.com/s?k=tennis+racket&tag='+TAG},
-    {label:'🎾 Tennis Balls $10',url:'https://www.amazon.com/s?k=tennis+balls+can&tag='+TAG},
-    {label:'👟 Court Shoes $60',url:'https://www.amazon.com/s?k=tennis+court+shoes+men&tag='+TAG},
-    {label:'🎒 Tennis Bag $30',url:'https://www.amazon.com/s?k=tennis+bag+racket&tag='+TAG},
-  ],
-  pickleball:[
-    {label:'🏓 Paddle from $35',url:'https://www.amazon.com/s?k=pickleball+paddle&tag='+TAG},
-    {label:'🟡 Pickleballs $15',url:'https://www.amazon.com/s?k=pickleballs+outdoor&tag='+TAG},
-    {label:'👟 Court Shoes $60',url:'https://www.amazon.com/s?k=pickleball+court+shoes&tag='+TAG},
-    {label:'🎒 Paddle Bag $25',url:'https://www.amazon.com/s?k=pickleball+bag&tag='+TAG},
-    {label:'🥅 Portable Net $80',url:'https://www.amazon.com/s?k=portable+pickleball+net&tag='+TAG},
-  ],
-  discgolf:[
-    {label:'🥏 Disc Set $30',url:'https://www.amazon.com/s?k=disc+golf+set+beginner&tag='+TAG},
-    {label:'🎒 Disc Bag $40',url:'https://www.amazon.com/s?k=disc+golf+bag&tag='+TAG},
-    {label:'🥏 Driver Disc $15',url:'https://www.amazon.com/s?k=disc+golf+driver&tag='+TAG},
-    {label:'🧤 Grip Glove $12',url:'https://www.amazon.com/s?k=disc+golf+glove&tag='+TAG},
-  ],
-  baseball:[
-    {label:'⚾ Baseball Glove $40',url:'https://www.amazon.com/s?k=baseball+glove&tag='+TAG},
-    {label:'🏏 Bat from $50',url:'https://www.amazon.com/s?k=baseball+bat&tag='+TAG},
-    {label:'⚾ Baseballs $20',url:'https://www.amazon.com/s?k=baseballs+12+pack&tag='+TAG},
-    {label:'⛑ Batting Helmet $30',url:'https://www.amazon.com/s?k=baseball+batting+helmet&tag='+TAG},
-    {label:'👟 Cleats from $40',url:'https://www.amazon.com/s?k=baseball+cleats+men&tag='+TAG},
-  ],
-  yoga:[
-    {label:'🧘 Yoga Mat $30',url:'https://www.amazon.com/s?k=yoga+mat+non+slip&tag='+TAG},
-    {label:'🧱 Yoga Blocks $15',url:'https://www.amazon.com/s?k=yoga+blocks+set&tag='+TAG},
-    {label:'🎽 Yoga Pants $28',url:'https://www.amazon.com/s?k=yoga+pants+women&tag='+TAG},
-    {label:'💧 Water Bottle $20',url:'https://www.amazon.com/s?k=insulated+water+bottle&tag='+TAG},
-    {label:'🧴 Yoga Strap $12',url:'https://www.amazon.com/s?k=yoga+strap+stretch&tag='+TAG},
-  ],
-  running:[
-    {label:'👟 Running Shoes $80',url:'https://www.amazon.com/s?k=running+shoes+men&tag='+TAG},
-    {label:'⌚ GPS Watch $120',url:'https://www.amazon.com/s?k=gps+running+watch&tag='+TAG},
-    {label:'🎧 Sport Earbuds $40',url:'https://www.amazon.com/s?k=wireless+earbuds+sport+waterproof&tag='+TAG},
-    {label:'💧 Handheld Bottle $20',url:'https://www.amazon.com/s?k=running+water+bottle+handheld&tag='+TAG},
-  ],
+const SPORTS = {
+  basketball:{icon:'🏀',name:'Basketball'},
+  football:{icon:'🏈',name:'Football'},
+  soccer:{icon:'⚽',name:'Soccer'},
+  volleyball:{icon:'🏐',name:'Volleyball'},
+  tennis:{icon:'🎾',name:'Tennis'},
+  pickleball:{icon:'🏓',name:'Pickleball'},
+  discgolf:{icon:'🥏',name:'Disc Golf'},
+  baseball:{icon:'⚾',name:'Baseball'},
+  yoga:{icon:'🧘',name:'Yoga'},
+  running:{icon:'🏃',name:'Running'},
+  other:{icon:'✨',name:'Other'}
 };
 
-const STORE_BY_SPORT={
-  basketball:[
-    {name:'Wilson NBA Game Ball',emoji:'🏀',desc:'Official NBA basketball — premium leather, size 7',price:'$170',cat:'Ball',url:'https://www.amazon.com/Wilson-NBA-Official-Game-Basketball/dp/B098TYD4BZ/'},
-    {name:'Basketball Shoes',emoji:'👟',desc:'Court-grip traction, ankle support',price:'From $70',cat:'Footwear',kw:'basketball+shoes+men'},
-    {name:'Wilson NBA Backpack',emoji:'🎒',desc:'Ball compartment, shoe pocket',price:'From $45',cat:'Gear',url:'https://www.amazon.com/WILSON-NBA-Authentic-Basketball-Backpack/dp/B099SG5113/'},
-    {name:'Ankle Brace',emoji:'🦵',desc:'Adjustable compression support',price:'From $18',cat:'Protection',url:'https://www.amazon.com/Ankle-Brace-Adjustable-Compression-Basketball/dp/B071NMBSVS/'},
-    {name:'Ball Pump Kit',emoji:'💨',desc:'5 needles — never play on a flat',price:'From $10',cat:'Accessories',url:'https://www.amazon.com/Ball-Pump-Needles-Nozzle-Inflatables/dp/B095LDKLCK/'},
-    {name:'Nike Compression Shorts',emoji:'🩳',desc:'Dri-FIT moisture-wicking',price:'From $28',cat:'Apparel',kw:'nike+compression+shorts+basketball'},
-    {name:'Portable Basketball Hoop',emoji:'🏟',desc:'Adjustable 4.5–10 ft, 44" backboard',price:'From $180',cat:'Equipment',url:'https://www.amazon.com/DWVO-Basketball-Adjustable-Shatterproof-Backboard/dp/B0CCNY2YQM/'},
-    {name:'Headband & Wristband Set',emoji:'🎽',desc:'6-piece sweat set',price:'From $10',cat:'Accessories',url:'https://www.amazon.com/Sweatband-Sports-Basketball-Headband-Wristband/dp/B0FPLTSTVV/'},
-  ],
-  soccer:[
-    {name:'Soccer Ball',emoji:'⚽',desc:'FIFA quality, durable outdoor play',price:'From $30',cat:'Ball',kw:'soccer+ball+outdoor+fifa'},
-    {name:'Soccer Cleats',emoji:'👟',desc:'Firm ground traction, all positions',price:'From $40',cat:'Footwear',kw:'soccer+cleats+men'},
-    {name:'Goalkeeper Gloves',emoji:'🧤',desc:'Palm grip, finger protection',price:'From $25',cat:'Protection',kw:'goalkeeper+gloves'},
-    {name:'Pinnies / Vests',emoji:'🦺',desc:'Pack of 12, multiple colors',price:'From $15',cat:'Gear',kw:'soccer+pinnies+vest+set'},
-    {name:'Shin Guards',emoji:'🛡',desc:'Lightweight ankle sleeve included',price:'From $15',cat:'Protection',kw:'soccer+shin+guards'},
-    {name:'Soccer Bag',emoji:'🎒',desc:'Ball holder + shoe compartment',price:'From $35',cat:'Gear',kw:'soccer+bag+backpack'},
-  ],
-  football:[
-    {name:'Football',emoji:'🏈',desc:'Official size, great grip',price:'From $30',cat:'Ball',kw:'football+official+size'},
-    {name:'Flag Football Set',emoji:'🚩',desc:'14-player set with flags & belts',price:'From $20',cat:'Gear',kw:'flag+football+set'},
-    {name:'Receiver Gloves',emoji:'🧤',desc:'Tacky grip, flexible fit',price:'From $25',cat:'Gear',kw:'football+receiver+gloves'},
-    {name:'Football Cleats',emoji:'👟',desc:'Ankle support, turf-ready',price:'From $40',cat:'Footwear',kw:'football+cleats+men'},
-    {name:'Mouth Guard',emoji:'🦷',desc:'Boil-and-bite, low profile',price:'From $8',cat:'Protection',kw:'football+mouth+guard'},
-    {name:'Cones & Agility Set',emoji:'🔶',desc:'12 cones + speed ladder',price:'From $20',cat:'Training',kw:'agility+cones+speed+ladder'},
-  ],
-  volleyball:[
-    {name:'Volleyball',emoji:'🏐',desc:'Indoor/outdoor composite leather',price:'From $25',cat:'Ball',kw:'volleyball+outdoor'},
-    {name:'Knee Pads',emoji:'🩱',desc:'Low-profile, high protection',price:'From $18',cat:'Protection',kw:'volleyball+knee+pads'},
-    {name:'Sports Sunglasses',emoji:'🕶',desc:'UV400, polarized, wrap-around',price:'From $20',cat:'Accessories',kw:'sports+sunglasses+polarized'},
-    {name:'Beach Volleyball Net',emoji:'🏖',desc:'Portable with poles, regulation size',price:'From $60',cat:'Equipment',kw:'beach+volleyball+net+portable'},
-  ],
-  tennis:[
-    {name:'Tennis Racket',emoji:'🎾',desc:'All-around control, intermediate play',price:'From $50',cat:'Racket',kw:'tennis+racket'},
-    {name:'Tennis Balls (4-pack)',emoji:'🟡',desc:'Pressurized, durable',price:'From $10',cat:'Ball',kw:'tennis+balls+can+4'},
-    {name:'Tennis Shoes',emoji:'👟',desc:'Court cushioning, lateral support',price:'From $60',cat:'Footwear',kw:'tennis+court+shoes+men'},
-    {name:'Tennis Bag',emoji:'🎒',desc:'Holds 2-3 rackets + gear',price:'From $30',cat:'Gear',kw:'tennis+bag+racket'},
-  ],
-  pickleball:[
-    {name:'Pickleball Paddle',emoji:'🏓',desc:'Graphite face, polymer core, mid-weight',price:'From $35',cat:'Paddle',kw:'pickleball+paddle'},
-    {name:'Outdoor Pickleballs',emoji:'🟡',desc:'40-hole durable outdoor balls, 6-pack',price:'From $15',cat:'Ball',kw:'pickleballs+outdoor+6+pack'},
-    {name:'Court Shoes',emoji:'👟',desc:'Lateral support, non-marking sole',price:'From $60',cat:'Footwear',kw:'pickleball+court+shoes'},
-    {name:'Paddle Bag',emoji:'🎒',desc:'Holds 2 paddles + balls + accessories',price:'From $25',cat:'Gear',kw:'pickleball+bag'},
-    {name:'Portable Net',emoji:'🥅',desc:'Full regulation size, sets up in minutes',price:'From $80',cat:'Equipment',kw:'portable+pickleball+net'},
-    {name:'Grip Tape',emoji:'🖐',desc:'Moisture-wicking overwrap, 15-pack',price:'From $10',cat:'Accessories',kw:'pickleball+paddle+grip+tape'},
-  ],
-  discgolf:[
-    {name:'Disc Golf Starter Set',emoji:'🥏',desc:'Driver, mid-range, putter — great for beginners',price:'From $30',cat:'Discs',kw:'disc+golf+set+beginner'},
-    {name:'Disc Golf Bag',emoji:'🎒',desc:'Holds 10-15 discs, shoulder strap',price:'From $40',cat:'Gear',kw:'disc+golf+bag'},
-    {name:'Distance Driver',emoji:'🥏',desc:'High-speed driver for max distance',price:'From $15',cat:'Disc',kw:'disc+golf+driver'},
-    {name:'Putter Disc',emoji:'🎯',desc:'Consistent flight, great for approach shots',price:'From $12',cat:'Disc',kw:'disc+golf+putter'},
-    {name:'Disc Golf Glove',emoji:'🧤',desc:'Grip in any weather, fits right or left',price:'From $12',cat:'Accessories',kw:'disc+golf+glove'},
-    {name:'Mini Marker Disc',emoji:'🔵',desc:'Mark your lie — pack of 4',price:'From $8',cat:'Accessories',kw:'disc+golf+mini+marker'},
-  ],
-  baseball:[
-    {name:'Baseball Glove',emoji:'🥊',desc:'Full grain leather, all positions',price:'From $40',cat:'Fielding',kw:'baseball+glove+adult'},
-    {name:'Aluminum Bat',emoji:'🏏',desc:'USSSA approved, balanced swing weight',price:'From $50',cat:'Batting',kw:'baseball+bat+aluminum'},
-    {name:'Baseballs (12-pack)',emoji:'⚾',desc:'Practice and game balls, leather cover',price:'From $20',cat:'Ball',kw:'baseballs+12+pack'},
-    {name:'Batting Helmet',emoji:'⛑',desc:'Single ear flap, ABS shell',price:'From $30',cat:'Safety',kw:'baseball+batting+helmet'},
-    {name:'Baseball Cleats',emoji:'👟',desc:'Molded cleats, ankle support',price:'From $40',cat:'Footwear',kw:'baseball+cleats+men'},
-    {name:'Batting Gloves',emoji:'🧤',desc:'Padded palm, adjustable wrist strap',price:'From $20',cat:'Batting',kw:'batting+gloves+baseball'},
-  ],
-  running:[
-    {name:'Running Shoes',emoji:'👟',desc:'Cushioned, breathable, road-ready',price:'From $80',cat:'Footwear',kw:'running+shoes+men'},
-    {name:'GPS Running Watch',emoji:'⌚',desc:'Pace, distance, heart rate',price:'From $120',cat:'Tech',kw:'gps+running+watch'},
-    {name:'Wireless Sport Earbuds',emoji:'🎧',desc:'Sweat-proof, secure fit',price:'From $40',cat:'Tech',kw:'wireless+earbuds+sport+waterproof'},
-    {name:'Running Water Bottle',emoji:'💧',desc:'Handheld, 16oz, insulated',price:'From $20',cat:'Accessories',kw:'running+water+bottle+handheld'},
-    {name:'Compression Socks',emoji:'🧦',desc:'Arch support, blister prevention',price:'From $12',cat:'Apparel',kw:'running+compression+socks'},
-    {name:'Reflective Running Vest',emoji:'🦺',desc:'High-vis for early runs',price:'From $15',cat:'Safety',kw:'reflective+running+vest'},
-  ],
-  yoga:[
-    {name:'Non-Slip Yoga Mat',emoji:'🧘',desc:'6mm thick, extra grip, carrying strap included',price:'From $30',cat:'Mat',kw:'yoga+mat+non+slip+thick'},
-    {name:'Yoga Blocks (Set of 2)',emoji:'🧱',desc:'High-density foam, great for all levels',price:'From $15',cat:'Props',kw:'yoga+blocks+set+foam'},
-    {name:'Yoga Strap',emoji:'🎗',desc:'8-ft cotton strap, 10 loop positions',price:'From $12',cat:'Props',kw:'yoga+strap+stretch+cotton'},
-    {name:'Yoga Pants',emoji:'🎽',desc:'High-waist, 4-way stretch, moisture-wicking',price:'From $28',cat:'Apparel',kw:'yoga+pants+high+waist+women'},
-    {name:'Yoga Bag',emoji:'🎒',desc:'Fits mat + gear, adjustable shoulder strap',price:'From $22',cat:'Gear',kw:'yoga+mat+bag+carrier'},
-    {name:'Foam Roller',emoji:'🔵',desc:'Deep tissue muscle recovery, 13-inch',price:'From $20',cat:'Recovery',kw:'foam+roller+muscle+recovery'},
-    {name:'Resistance Bands Set',emoji:'🟡',desc:'5 levels, great for stretching and warm-up',price:'From $15',cat:'Props',kw:'resistance+bands+set+yoga'},
-    {name:'Meditation Cushion',emoji:'🪷',desc:'Buckwheat fill, removable cover',price:'From $35',cat:'Accessories',kw:'meditation+cushion+zafu'},
-  ],
+const TYPE_INFO = {
+  spot:{label:'📍 Spot',cls:'b-spot',color:'#22c55e'},
+  findpickup:{label:'🔍 Pickup',cls:'b-findpickup',color:'#3b82f6'},
+  needplayers:{label:'👥 Need Players',cls:'b-needplayers',color:'#f59e0b'},
+  postpeople:{label:'🤙 Go',cls:'b-postpeople',color:'#e85d04'}
 };
 
-const TM={
-  spot:{label:'📍 Post a Spot',cls:'b-spot',color:'#22c55e',title:'Post a Spot',sub:'Drop a court or open gym'},
-  findpickup:{label:'🔍 Find Pickup',cls:'b-findpickup',color:'#60a5fa',title:'Find Pickup',sub:'Looking for a run to join'},
-  needplayers:{label:'👥 Need Players',cls:'b-needplayers',color:'#f59e0b',title:'Need Players',sub:'Got a spot, need more people'},
-  postpeople:{label:'🤙 Got People',cls:'b-postpeople',color:'#f97316',title:'Got People',sub:'You have a crew, need a spot'},
-};
-const CI={'Phone/Text':'📱','Email':'📧','Snapchat':'👻','Instagram':'📸','GroupMe':'💬','Other':'🔗'};
+const TICKER_ITEMS = [
+  {icon:'🏀',text:'5v5 Full Court · Riverside'},
+  {icon:'⚽',text:'Small-Sided Soccer · 6:30 PM'},
+  {icon:'🏓',text:'Pickleball Open Courts · Sat 9 AM'},
+  {icon:'🧘',text:'Sunrise Park Yoga · Tomorrow'},
+  {icon:'🏃',text:'Morning Tempo Run · 5 Miles'},
+  {icon:'🥏',text:'Disc Golf Round · Back 9 Open'}
+];
 
-function getSport(){return SPORTS.find(s=>s.id===selectedSport)||SPORTS[0];}
-function ago(ts){const s=Math.floor((Date.now()-ts)/1000);if(s<60)return'just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago';}
-function savePosts(){LS.set('runs_posts',posts);}
-function saveHistory(){LS.set('runs_history',runHistory);}
-function saveStats(){LS.set('runs_stats',privateStats);}
-function saveBoosts(){LS.set('runs_boosts',boostedPosts);}
+const SK = 'runs_user_v2';
+const IK = 'runs_imin_v2';
+const BK = 'runs_boost_v2';
+const CK = 'runs_open_chats_v2';
 
-if(!posts.length||!posts[0].sport){posts=seed();savePosts();}
+let user = null;
+let posts = [];
+let commentsMap = {};
+let openChatIds = new Set();
+let imInSet = new Set();
+let boosts = {};
+let currentTab = 'casual';
+let currentView = 'feed';
+let postType = 'findpickup';
+let postMode = 'casual';
+let postContacts = [];
+let setupSkill = 'Advanced';
+let editSkill = 'Advanced';
+let boostTargetId = null;
+let map = null;
+let markersLayer = null;
 
-function seed(){
-  const n=Date.now();
-  return [
-    {id:1,tab:'casual',type:'spot',sport:'basketball',title:'Open gym — 24 Hour Fitness Provo',desc:'Full court open, running 5s. All skill levels welcome. Come through.',location:'24 Hour Fitness · University Ave, Provo',when:'Tomorrow · 6:00 PM',fmt:'5v5',openGym:true,needed:null,host:'Marcus',pos:'PG',skill:'Advanced',age:'18+',contact:[{type:'Phone/Text',val:'801-555-0192'},{type:'Instagram',val:'@marcusbball'}],ts:n-1000*60*22,imIn:0,lat:40.2338,lng:-111.6585},
-    {id:2,tab:'casual',type:'postpeople',sport:'basketball',title:'Got 8 players, need a court — Lehi',desc:'Full crew of 8 ready to run 4v4. Anyone know an open gym or available court in Lehi tonight?',location:'Lehi / American Fork',when:'Tomorrow · 8:00 PM',fmt:'4v4',openGym:false,needed:8,host:'Trell',pos:'SF',skill:'Intermediate',age:'18+',contact:[{type:'GroupMe',val:'bit.ly/trell-crew'},{type:'Instagram',val:'@trellsf'}],ts:n-1000*60*30,imIn:0,lat:40.3916,lng:-111.8508},
-    {id:3,tab:'casual',type:'findpickup',sport:'basketball',title:'Anyone running near Orem Saturday?',desc:"Free Saturday morning, looking for wherever there's a run. Down for 3v3 or 5v5. Intermediate level, 6 years playing.",location:'Orem / Provo area',when:'Saturday morning',fmt:'any',openGym:false,needed:null,host:'Kai',pos:'SG',skill:'Intermediate',contact:[{type:'Phone/Text',val:'385-555-2201'}],ts:n-1000*60*60*1.5,imIn:0,lat:40.2969,lng:-111.6946},
-    {id:4,tab:'ranked',type:'needplayers',sport:'basketball',title:'Need 2 for 5s — competitive run',desc:'Running a competitive 5v5 at LA Fitness on State. We have 8, need 2 more. Must hold your own.',location:'LA Fitness · State St, Salt Lake City',when:'Wednesday · 7:00 PM',fmt:'5v5',openGym:false,needed:2,host:'Dre',pos:'PF',skill:'Elite',age:'18+',contact:[{type:'Snapchat',val:'dre_hoops'},{type:'Phone/Text',val:'801-555-8877'}],ts:n-1000*60*60*3,imIn:0,lat:40.7608,lng:-111.8910},
-    {id:5,tab:'ranked',type:'findpickup',sport:'basketball',title:'Just moved here — tryna find a serious run',desc:'Played D3 ball, moved to Utah County from Houston. Looking for competitive pickup, 5v5 preferred.',location:'Utah County',when:'Any day this week',fmt:'5v5',openGym:false,needed:null,host:'Jamal',pos:'C',skill:'Elite',contact:[{type:'Email',val:'jamal@gmail.com'},{type:'Instagram',val:'@jamal_c'}],ts:n-1000*60*60*8,imIn:0,lat:40.2666,lng:-111.7410},
-    {id:6,tab:'casual',type:'needplayers',sport:'soccer',title:'Need 4 for 7v7 — Orem Soccer Complex',desc:'Running 7v7 this Sunday morning. Need 4 more players. All skill levels welcome, just come ready to run.',location:'Orem Soccer Complex, Orem UT',when:'Sunday · 9:00 AM',fmt:'any',openGym:false,needed:4,host:'Diego',pos:'Any',skill:'Intermediate',contact:[{type:'Instagram',val:'@diego_fc'},{type:'Phone/Text',val:'801-555-4433'}],ts:n-1000*60*90,imIn:0,lat:40.2991,lng:-111.7115},
-    {id:7,tab:'casual',type:'findpickup',sport:'football',title:'Looking for flag football game — weekends',desc:'Want to get into a flag football game. Available weekends. Have my own flags. Played rec league 3 years.',location:'Utah Valley',when:'Weekends',fmt:'any',openGym:false,needed:null,host:'Tyler',pos:'Any',skill:'Intermediate',contact:[{type:'Phone/Text',val:'801-555-9922'},{type:'Snapchat',val:'tyler_flags'}],ts:n-1000*60*60*2,imIn:0,lat:40.3502,lng:-111.7726},
-    {id:8,tab:'casual',type:'spot',sport:'volleyball',title:'Beach volleyball — East Bay sand courts',desc:'East Bay sand courts are open. Bring yourself, we always have extras. Usually 4-6 people show up Saturdays.',location:'East Bay Park, Provo UT',when:'Saturdays · 10:00 AM',fmt:'any',openGym:true,needed:null,host:'Mia',pos:'Any',skill:'Beginner',contact:[{type:'Instagram',val:'@mia_spikes'}],ts:n-1000*60*45,imIn:0,lat:40.2205,lng:-111.6463},
-    {id:9,tab:'casual',type:'needplayers',sport:'pickleball',title:'Need 2 more for doubles — Provo courts',desc:'Have 2, need 2. Intermediate level, super chill. Courts are open at the Provo Rec Center. Come ready to rally.',location:'Provo Recreation Center',when:'Friday · 5:30 PM',fmt:'any',openGym:false,needed:2,host:'Sandra',pos:'Any',skill:'Intermediate',contact:[{type:'Phone/Text',val:'801-555-3341'},{type:'Instagram',val:'@sandra_pkl'}],ts:n-1000*60*35,imIn:0,lat:40.2351,lng:-111.6611},
-    {id:10,tab:'casual',type:'findpickup',sport:'pickleball',title:'Anyone playing in Lehi this weekend?',desc:'New to the area, been playing for about a year. Looking for a relaxed doubles game Saturday or Sunday morning.',location:'Lehi / Pleasant Grove area',when:'This weekend',fmt:'any',openGym:false,needed:null,host:'Greg',pos:'Any',skill:'Beginner',contact:[{type:'Phone/Text',val:'385-555-7712'}],ts:n-1000*60*60*4,imIn:0,lat:40.3885,lng:-111.8490},
-    {id:11,tab:'casual',type:'spot',sport:'discgolf',title:'Timpanogos Disc Golf — casual round',desc:'Heading to Timp disc golf course Sunday afternoon. Open to anyone joining. Great beginner-friendly course.',location:'Timpanogos Park Disc Golf, Pleasant Grove UT',when:'Sunday · 1:00 PM',fmt:'any',openGym:true,needed:null,host:'Cole',pos:'Any',skill:'Beginner',contact:[{type:'Instagram',val:'@cole_disc'},{type:'Phone/Text',val:'801-555-0087'}],ts:n-1000*60*60*5,imIn:0,lat:40.3620,lng:-111.7398},
-    {id:12,tab:'ranked',type:'needplayers',sport:'discgolf',title:'Competitive singles round — need 2 more',desc:'Running a rated round at Cascade Fairways. Looking for 2 players rated 900+. Serious players only.',location:'Cascade Fairways Disc Golf, Orem UT',when:'Saturday · 8:00 AM',fmt:'any',openGym:false,needed:2,host:'Zach',pos:'Any',skill:'Elite',contact:[{type:'Snapchat',val:'zach_disc'},{type:'Email',val:'zach@gmail.com'}],ts:n-1000*60*60*6,imIn:0,lat:40.3115,lng:-111.7230},
-    {id:13,tab:'casual',type:'needplayers',sport:'baseball',title:'Need 3 for Sunday softball — SL County',desc:'Pickup softball game at Liberty Park Sunday. We have 15, need 3 more. All skill levels, bring your glove.',location:'Liberty Park, Salt Lake City UT',when:'Sunday · 11:00 AM',fmt:'any',openGym:false,needed:3,host:'Russ',pos:'Any',skill:'Intermediate',contact:[{type:'Phone/Text',val:'801-555-6621'},{type:'GroupMe',val:'bit.ly/russ-softball'}],ts:n-1000*60*55,imIn:0,lat:40.7484,lng:-111.8722},
-    {id:14,tab:'casual',type:'findpickup',sport:'baseball',title:'Looking for a casual catch or batting practice',desc:'Just moved to Provo, looking for people to throw with or find a batting cage group. Played high school ball.',location:'Provo / Orem area',when:'Flexible',fmt:'any',openGym:false,needed:null,host:'Aaron',pos:'Any',skill:'Intermediate',contact:[{type:'Instagram',val:'@aaron_bb'},{type:'Phone/Text',val:'385-555-4490'}],ts:n-1000*60*60*7,imIn:0,lat:40.2480,lng:-111.6700},
-    {id:15,tab:'casual',type:'spot',sport:'yoga',title:'Outdoor yoga — Provo River Trail',desc:'Free outdoor flow every Saturday morning at the river trail pavilion. All levels welcome — bring your mat and water. Vinyasa style, about 60 min.',location:'Provo River Trail Pavilion, Provo UT',when:'Saturdays · 8:00 AM',fmt:'any',openGym:true,needed:null,host:'Leila',pos:'Any',skill:'Beginner',contact:[{type:'Instagram',val:'@leila_flows'},{type:'Phone/Text',val:'801-555-2278'}],ts:n-1000*60*50,imIn:0,lat:40.2489,lng:-111.6457},
-    {id:16,tab:'casual',type:'needplayers',sport:'yoga',title:'Need 4 more for studio class share — Provo',desc:'Splitting a private studio session for a group flow class. Need 4 more people to fill spots. $10/person. Intermediate level, 75 min hot yoga.',location:'YogaWorks Studio, Provo UT',when:'Thursday · 6:30 PM',fmt:'any',openGym:false,needed:4,host:'Camille',pos:'Any',skill:'Intermediate',contact:[{type:'Instagram',val:'@camille_yoga'},{type:'Email',val:'camille@gmail.com'}],ts:n-1000*60*60*2.5,imIn:0,lat:40.2325,lng:-111.6590},
-  ];
+function showToast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer=setTimeout(()=>el.classList.remove('show'),2200);
 }
 
-function buildTicker(){
-  const items=TICKER_BY_SPORT[selectedSport]||TICKER_BY_SPORT.basketball;
-  const doubled=[...items,...items];
-  document.getElementById('ticker-track').innerHTML='<span class="ticker-label">Gear Up: </span>'+doubled.map(i=>`<a class="ticker-item" href="${i.url}" target="_blank" rel="noopener">${i.label}</a>`).join('');
-}
-
-function buildShop(){
-  const store=STORE_BY_SPORT[selectedSport]||STORE_BY_SPORT.basketball;
-  document.getElementById('shop-grid').innerHTML=store.map(p=>{
-    const url=p.url?(p.url+'?tag='+TAG):'https://www.amazon.com/s?k='+p.kw+'&tag='+TAG;
-    return`<a class="store-card" href="${url}" target="_blank" rel="noopener"><div class="store-cat">${p.cat}</div><div class="store-emoji">${p.emoji}</div><div class="store-name">${p.name}</div><div class="store-desc">${p.desc}</div><div class="store-price">${p.price}</div><span class="store-cta">Buy on Amazon →</span></a>`;
-  }).join('');
-}
-
-function openSportPicker(){
-  document.getElementById('sport-grid').innerHTML=SPORTS.map(s=>`<button class="sport-opt${s.id===selectedSport?' on':''}" onclick="selectSport('${s.id}')"><span class="s-icon">${s.icon}</span><span class="s-name">${s.label}</span></button>`).join('');
-  document.getElementById('modal-sport').classList.add('open');
-}
-
-function selectSport(id){
-  selectedSport=id;
-  LS.set('runs_sport',id);
-  closeModal('modal-sport');
-  const sp=getSport();
-  document.getElementById('sport-btn').textContent=sp.icon+' '+sp.label+' ▾';
-  buildTicker();buildShop();render();
-  if(currentView==='map')refreshMap();
-}
-
-function switchView(v){
-  currentView=v;
-  document.querySelectorAll('.view-section').forEach(el=>el.classList.remove('active'));
-  document.getElementById('view-'+v).classList.add('active');
-  const sa=document.getElementById('search-area'),tb=document.getElementById('tabs');
-  sa.style.display=v==='feed'?'':'none';
-  tb.style.display=v==='feed'?'':'none';
-  ['nav-shop','nav-map','nav-find'].forEach(id=>document.getElementById(id).classList.remove('active'));
-  if(v==='shop')document.getElementById('nav-shop').classList.add('active');
-  else if(v==='map')document.getElementById('nav-map').classList.add('active');
-  else document.getElementById('nav-find').classList.add('active');
-  if(v==='map')initMap();
-}
-
-function initMap(){
-  if(!leafletMap){
-    leafletMap=L.map('map-container').setView([40.33,-111.75],10);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(leafletMap);
+function getSportMeta(code, customName){
+  if(code==='other'){
+    const label=(customName||'').trim()||'Other';
+    return {icon:'✨',name:label};
   }
-  refreshMap();
-  setTimeout(()=>leafletMap.invalidateSize(),150);
+  return SPORTS[code]||{icon:'🏅',name:code||'Sport'};
 }
 
-function refreshMap(){
-  if(!leafletMap)return;
-  mapMarkers.forEach(m=>leafletMap.removeLayer(m));
-  mapMarkers=[];
-  const toShow=posts.filter(p=>p.lat&&p.lng&&p.sport===selectedSport);
-  toShow.forEach(p=>{
-    const tm=TM[p.type]||TM.findpickup;
-    const gUrl='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.location||p.lat+','+p.lng);
-    const aUrl='https://maps.apple.com/?q='+encodeURIComponent(p.location||'');
-    const iAct=myImIns.includes(p.id);
-    const iLabel=(p.imIn||0)>0?"I'm In ("+p.imIn+")":"I'm In";
-    let ctHtml='';
-    if(p.contact&&p.contact.length){
-      ctHtml='<div style="display:flex;gap:5px;flex-wrap:wrap;margin:8px 0">'+p.contact.map(c=>{
-        let h='#';
-        if(c.type==='Phone/Text')h='tel:'+c.val.replace(/\D/g,'');
-        else if(c.type==='Email')h='mailto:'+c.val;
-        else if(c.type==='Snapchat')h='https://snapchat.com/add/'+c.val.replace('@','');
-        else if(c.type==='Instagram')h='https://instagram.com/'+c.val.replace('@','');
-        else if(c.val&&c.val.startsWith('http'))h=c.val;
-        return'<a href="'+h+'" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:#f3f4f6;border-radius:5px;padding:3px 8px;font-size:11px;color:#111827;text-decoration:none">'+(CI[c.type]||'🔗')+' '+c.val+'</a>';
-      }).join('')+'</div>';
-    }
-    const statusHtml=p.openGym
-      ?'<div style="font-size:11px;font-weight:600;background:#dcfce7;color:#16a34a;display:inline-block;padding:3px 8px;border-radius:12px;margin-bottom:6px">🟢 Open — all welcome</div>'
-      :p.needed?'<div style="font-size:11px;font-weight:600;background:#fef3c7;color:#d97706;display:inline-block;padding:3px 8px;border-radius:12px;margin-bottom:6px">👥 '+p.needed+' spot'+(p.needed>1?'s':'')+' needed</div>':'';
-    const popup=`
-      <div style="font-family:'DM Sans',sans-serif;min-width:220px;max-width:270px">
-        <div style="font-size:10px;font-weight:700;color:${tm.color};text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">${tm.label}</div>
-        <div style="font-size:14px;font-weight:700;margin-bottom:5px;line-height:1.3">${p.title}</div>
-        <div style="font-size:11px;color:#6b7280;margin-bottom:4px">👤 ${p.host}${p.when?' &nbsp;·&nbsp; 📅 '+p.when:''}</div>
-        ${p.location?'<div style="font-size:11px;color:#6b7280;margin-bottom:6px">📍 '+p.location+'</div>':''}
-        ${statusHtml}
-        <div style="font-size:12px;color:#374151;line-height:1.45;margin-bottom:8px">${(p.desc||'').slice(0,100)}${(p.desc||'').length>100?'…':''}</div>
-        ${ctHtml}
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
-          <a href="${gUrl}" target="_blank" style="background:#3b82f6;color:#fff;padding:4px 10px;border-radius:6px;text-decoration:none;font-size:11px;font-weight:700">🗺 Google</a>
-          <a href="${aUrl}" target="_blank" style="background:#555;color:#fff;padding:4px 10px;border-radius:6px;text-decoration:none;font-size:11px;font-weight:700">🍎 Apple</a>
-        </div>
-        <button onclick="viewPostFromMap(${p.id})" style="width:100%;padding:8px;background:#e85d04;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">View Full Post →</button>
-      </div>`;
-    const dot=L.circleMarker([p.lat,p.lng],{radius:11,fillColor:tm.color,color:'#fff',weight:2.5,opacity:1,fillOpacity:0.92}).addTo(leafletMap).bindPopup(popup,{maxWidth:290});
-    mapMarkers.push(dot);
+function isPostExpired(post){
+  const refTime = post.scheduledAt || post.createdAt || 0;
+  if(!refTime) return false;
+  return (Date.now() - Number(refTime)) > 24 * 60 * 60 * 1000;
+}
+
+function hasSupabaseConfig(){
+  return SUPABASE_URL && !SUPABASE_URL.includes('YOUR-PROJECT-ID') && SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.includes('YOUR-ANON-PUBLIC-KEY');
+}
+
+async function sbFetch(path, options={}){
+  const url = `${SUPABASE_URL.replace(/\/+$/,'')}/rest/v1/${path}`;
+  const headers = Object.assign({
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+    'Content-Type': 'application/json'
+  }, options.headers || {});
+  const res = await fetch(url, Object.assign({}, options, {headers}));
+  if(!res.ok){
+    const txt = await res.text().catch(()=>res.statusText);
+    throw new Error(txt || `HTTP ${res.status}`);
+  }
+  if(res.status===204) return null;
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+function mapDbPost(row){
+  return {
+    id: row.id,
+    type: row.type || 'findpickup',
+    mode: row.mode || 'casual',
+    sport: row.sport || 'basketball',
+    customSport: row.custom_sport || '',
+    title: row.title || '',
+    location: row.location || '',
+    whenLabel: row.when_label || '',
+    scheduledAt: Number(row.scheduled_at || row.created_at || Date.now()),
+    desc: row.description || '',
+    contacts: Array.isArray(row.contacts) ? row.contacts : [],
+    authorName: row.author_name || 'Player',
+    authorSkill: row.author_skill || 'Intermediate',
+    authorArea: row.author_area || '',
+    imInCount: Number(row.im_in_count || 0),
+    createdAt: Number(row.created_at || Date.now())
+  };
+}
+
+async function syncFromCloud(){
+  if(!hasSupabaseConfig()) return;
+  try{
+    const rows = await sbFetch('posts?select=*&order=created_at.desc');
+    posts = (rows || []).map(mapDbPost).filter(p => !isPostExpired(p));
+    const cRows = await sbFetch('comments?select=*&order=created_at.asc');
+    const grouped = {};
+    (cRows || []).forEach(c=>{
+      if(!grouped[c.post_id]) grouped[c.post_id]=[];
+      grouped[c.post_id].push({
+        id: c.id,
+        postId: c.post_id,
+        authorName: c.author_name || 'Player',
+        text: c.text || '',
+        createdAt: Number(c.created_at || Date.now())
+      });
+    });
+    commentsMap = grouped;
+    render();
+  }catch(err){
+    console.warn('Supabase sync issue:', err);
+  }
+}
+
+async function createPostInCloud(postObj){
+  if(!hasSupabaseConfig()) return;
+  const payload = {
+    id: postObj.id,
+    type: postObj.type,
+    mode: postObj.mode,
+    sport: postObj.sport,
+    custom_sport: postObj.customSport || null,
+    title: postObj.title,
+    location: postObj.location,
+    when_label: postObj.whenLabel,
+    scheduled_at: postObj.scheduledAt,
+    description: postObj.desc,
+    contacts: postObj.contacts || [],
+    author_name: postObj.authorName,
+    author_skill: postObj.authorSkill,
+    author_area: postObj.authorArea || '',
+    im_in_count: postObj.imInCount || 0,
+    created_at: postObj.createdAt
+  };
+  await sbFetch('posts', {
+    method: 'POST',
+    headers: {'Prefer': 'return=representation'},
+    body: JSON.stringify(payload)
   });
-  const sp=getSport();
-  const legend=document.getElementById('map-legend');
-  const typeColors=Object.entries(TM).map(([k,v])=>`<div class="legend-row"><div class="legend-dot" style="background:${v.color}"></div><span>${v.label.replace(/\p{Emoji}/u,'').trim()}</span></div>`).join('');
-  legend.innerHTML=`<div class="map-legend-title">${sp.icon} ${sp.label} Runs</div>${typeColors}<div style="margin-top:6px;color:var(--text3);font-size:10px">${toShow.length} location${toShow.length!==1?'s':''} shown</div>`;
 }
 
-function viewPostFromMap(id){
-  const p=posts.find(x=>x.id===id);
-  if(!p)return;
-  switchView('feed');
-  if(p.tab!==activeTab)switchTab(p.tab);
-  setTimeout(()=>{
-    const el=document.querySelector('[data-post-id="'+id+'"]');
-    if(!el)return;
-    el.scrollIntoView({behavior:'smooth',block:'center'});
-    el.style.outline='2.5px solid #e85d04';
-    el.style.borderRadius='12px';
-    setTimeout(()=>{el.style.outline='';},2200);
-  },120);
+async function updateImInInCloud(postId, newCount){
+  if(!hasSupabaseConfig()) return;
+  await sbFetch(`posts?id=eq.${encodeURIComponent(postId)}`, {
+    method: 'PATCH',
+    headers: {'Prefer': 'return=representation'},
+    body: JSON.stringify({im_in_count: newCount})
+  });
 }
 
-function getGeoLocation(){
-  const btn=document.getElementById('btn-getloc'),st=document.getElementById('loc-status');
-  if(!navigator.geolocation){st.textContent='Geolocation not supported on this device.';return;}
-  btn.textContent='📍 Getting location…';
-  navigator.geolocation.getCurrentPosition(
-    pos=>{postDraft.lat=pos.coords.latitude;postDraft.lng=pos.coords.longitude;btn.textContent='✅ Location pinned';st.textContent=postDraft.lat.toFixed(4)+', '+postDraft.lng.toFixed(4)+' — will appear on map';},
-    ()=>{btn.textContent='📍 Use my location';st.textContent='Could not get location. Post still appears in feed.';}
-  );
+async function deletePostInCloud(postId){
+  if(!hasSupabaseConfig()) return;
+  await sbFetch(`posts?id=eq.${encodeURIComponent(postId)}`, {method: 'DELETE'});
 }
 
-function switchTab(t){
-  activeTab=t;
-  LS.set('runs_tab',t);
-  document.getElementById('tab-casual').className='tab-btn'+(t==='casual'?' active':'');
-  document.getElementById('tab-ranked').className='tab-btn'+(t==='ranked'?' active':'');
+async function createCommentInCloud(commentObj){
+  if(!hasSupabaseConfig()) return;
+  await sbFetch('comments', {
+    method: 'POST',
+    headers: {'Prefer': 'return=representation'},
+    body: JSON.stringify({
+      id: commentObj.id,
+      post_id: commentObj.postId,
+      author_name: commentObj.authorName,
+      text: commentObj.text,
+      created_at: commentObj.createdAt
+    })
+  });
+}
+
+function init(){
+  try{user=JSON.parse(localStorage.getItem(SK))}catch(e){}
+  try{imInSet=new Set(JSON.parse(localStorage.getItem(IK)||'[]'))}catch(e){}
+  try{boosts=JSON.parse(localStorage.getItem(BK)||'{}')}catch(e){}
+  try{openChatIds=new Set(JSON.parse(localStorage.getItem(CK)||'[]'))}catch(e){}
+
+  if(!user||!user.name){
+    document.getElementById('setup-screen').classList.remove('hidden');
+  }else{
+    document.getElementById('setup-screen').classList.add('hidden');
+    if(!user.sport) user.sport='basketball';
+    updateHeader();
+  }
+
+  buildTicker();
+  buildShop();
+  render();
+  syncFromCloud();
+  setInterval(syncFromCloud, 15000);
+}
+
+function setSetupSkill(val, btn){
+  setupSkill=val;
+  document.querySelectorAll('#setup-skill-seg .seg-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+function saveSetup(){
+  const name=document.getElementById('setup-name').value.trim();
+  if(!name){showToast('Please enter your name');return;}
+  const sport=document.getElementById('setup-sport').value;
+  const area=document.getElementById('setup-area').value.trim();
+  user={name, sport, area, skill:setupSkill, postsCreated:0, gamesJoined:0};
+  localStorage.setItem(SK, JSON.stringify(user));
+  document.getElementById('setup-screen').classList.add('hidden');
+  updateHeader();
   render();
 }
 
-function render(){
-  const now=Date.now();
-  Object.keys(boostedPosts).forEach(id=>{if(boostedPosts[id]<now)delete boostedPosts[id];});
-  saveBoosts();
-  const cut=now-7*24*3600*1000,before=posts.length;
-  posts=posts.filter(p=>p.ts>cut);
-  if(posts.length<before)savePosts();
-  if(!posts.length){posts=seed();savePosts();}
-  const q=(document.getElementById('search-input').value||'').toLowerCase().trim();
-  const sp=getSport();
-  let list=posts.filter(p=>p.tab===activeTab&&p.sport===selectedSport).filter(p=>!q||(p.location||'').toLowerCase().includes(q)||(p.title||'').toLowerCase().includes(q));
-  list.sort((a,b)=>{const aB=boostedPosts[a.id]>now?1:0,bB=boostedPosts[b.id]>now?1:0;if(aB!==bB)return bB-aB;return b.ts-a.ts;});
-  const feed=document.getElementById('feed');
-  if(!list.length){feed.innerHTML=`<div id="empty-state"><div class="empty-icon">${sp.icon}</div><div class="empty-title">No ${activeTab} ${sp.label} posts yet</div><div class="empty-sub">Be the first to drop something</div></div>`;return;}
-  let html='';
-  list.forEach((p,i)=>{
-    html+=cardHTML(p);
-    if((i+1)%4===0&&i<list.length-1)html+='<div class="ad-card"><div class="ad-label">Advertisement</div><ins class="adsbygoogle" style="display:block;width:100%" data-ad-client="ca-pub-XXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins></div>';
-  });
-  feed.innerHTML=html;
-  if(window.adsbygoogle){document.querySelectorAll('.adsbygoogle:not([data-adsbygoogle-status])').forEach(()=>{(window.adsbygoogle=window.adsbygoogle||[]).push({});});}
+function updateHeader(){
+  if(!user) return;
+  const initials=user.name.split(/\s+/).map(p=>p[0]).join('').toUpperCase().slice(0,2)||'ME';
+  document.getElementById('hdr-av').textContent=initials;
+  const sp=getSportMeta(user.sport, user.customSport);
+  document.getElementById('sport-btn').textContent=`${sp.icon} ${sp.name} ▾`;
 }
 
-function cardHTML(p){
-  const tm=TM[p.type]||TM.findpickup,iMy=profile&&p.host===profile.name,iAct=myImIns.includes(p.id),isBoosted=boostedPosts[p.id]&&boostedPosts[p.id]>Date.now();
-  const sp=SPORTS.find(s=>s.id===p.sport)||SPORTS[0];
-  let badges='<span class="badge '+tm.cls+'">'+tm.label+'</span><span class="badge b-sport">'+sp.icon+' '+sp.label+'</span>';
-  if(p.age)badges+='<span class="badge b-age">👥 '+p.age+'</span>';
-  if(p.skill)badges+='<span class="badge b-skill">'+p.skill+'</span>';
-  if(p.fmt&&p.fmt!=='any')badges+='<span class="badge b-fmt">'+p.fmt+'</span>';
-  const loc=p.location?'<div class="card-location"><div class="loc-text">📍 '+p.location+'</div><a class="btn-maps" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.location)+'" target="_blank" rel="noopener">🗺 Maps</a></div>':'';
-  let st='';
-  if(p.openGym)st='<div class="card-status"><span class="status-pill status-open">🟢 Open — all welcome</span></div>';
-  else if(p.needed)st='<div class="card-status"><span class="status-pill status-spots">👥 '+p.needed+' spot'+(p.needed>1?'s':'')+' needed</span></div>';
-  let ct='';
-  if(p.contact&&p.contact.length){
-    ct='<div class="card-contacts">'+p.contact.map(c=>{
-      let h='#';
-      if(c.type==='Phone/Text')h='tel:'+c.val.replace(/\D/g,'');
-      else if(c.type==='Email')h='mailto:'+c.val;
-      else if(c.type==='Snapchat')h='https://snapchat.com/add/'+c.val.replace('@','');
-      else if(c.type==='Instagram')h='https://instagram.com/'+c.val.replace('@','');
-      else if(c.val&&c.val.startsWith('http'))h=c.val;
-      return'<a class="contact-chip" href="'+h+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+(CI[c.type]||'🔗')+' '+c.val+'</a>';
-    }).join('')+'</div>';
+function buildTicker(){
+  const track=document.getElementById('ticker-track');
+  const base='<span class="ticker-label">LIVE PICKUP</span>' + TICKER_ITEMS.map(t=>`<span class="ticker-item">${t.icon} ${esc(t.text)}</span>`).join('');
+  track.innerHTML=base+base;
+}
+
+function buildShop(){
+  const grid=document.getElementById('shop-grid');
+  grid.innerHTML=STORE_ITEMS.map(item=>`
+    <a class="store-card" href="https://www.amazon.com/dp/${item.asin}?tag=runsapp-20" target="_blank" rel="noopener noreferrer">
+      <div class="store-cat">${esc(item.cat)}</div>
+      <div class="store-emoji">${item.emoji}</div>
+      <div class="store-name">${esc(item.name)}</div>
+      <div class="store-desc">${esc(item.desc)}</div>
+      <div class="store-price">${esc(item.price)}</div>
+      <span class="store-cta">View on Amazon</span>
+    </a>
+  `).join('');
+}
+
+function toggleClearBtn(){
+  const val=document.getElementById('search-input').value.trim();
+  document.getElementById('btn-clear').classList.toggle('visible', Boolean(val));
+}
+
+function clearSearch(){
+  document.getElementById('search-input').value='';
+  toggleClearBtn();
+  render();
+}
+
+function switchTab(mode){
+  currentTab=mode;
+  document.getElementById('tab-casual').classList.toggle('active', mode==='casual');
+  document.getElementById('tab-rated').classList.toggle('active', mode==='rated');
+  render();
+}
+
+function switchView(view){
+  currentView=view;
+  document.querySelectorAll('.view-section').forEach(el=>el.classList.remove('active'));
+  document.getElementById(`view-${view}`).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  if(view==='feed') document.getElementById('nav-find').classList.add('active');
+  if(view==='map'){
+    document.getElementById('nav-map').classList.add('active');
+    initMap();
+    renderMapMarkers();
   }
-  const iLabel=(p.imIn||0)>0?"I'm In ("+p.imIn+")":"I'm In";
-  const boost=iMy?'<button class="btn-boost'+(isBoosted?' active':'')+'" onclick="openBoostModal('+p.id+',event)">⚡ '+(isBoosted?'Boosted':'Boost')+'</button>':'';
-  const del=iMy?'<button class="btn-del" onclick="deletePost('+p.id+',event)">🗑 Delete</button>':'';
-  return'<div class="post-card'+(isBoosted?' boosted':'')+'" data-post-id="'+p.id+'"><div class="card-border" style="background:'+tm.color+'"></div><div class="card-body">'
-    +(isBoosted?'<div class="sponsored-tag">⚡ Sponsored</div>':'')
-    +'<div class="card-top"><div class="badges">'+badges+'</div><span class="card-ts">'+ago(p.ts)+'</span></div>'
-    +'<div class="card-title">'+p.title+'</div>'
-    +'<div class="card-user"><div class="avatar sm">'+p.host.slice(0,2).toUpperCase()+'</div><span class="user-name">'+p.host+(p.pos?' <span class="user-pos">'+p.pos+'</span>':'')+'</span></div>'
-    +(p.when?'<div class="card-when">📅 '+p.when+'</div>':'')
-    +'<div class="card-desc">'+p.desc+'</div>'
-    +loc+st+ct
-    +'<div class="card-actions"><button class="btn-imin'+(iAct?' active':'')+'" onclick="imIn('+p.id+',event)">'+iLabel+'</button><button class="btn-share-sm" onclick="sharePost('+p.id+',event)">🔗 Share</button>'+boost+del+'</div>'
-    +'<div class="card-footer"><div class="footer-user"><div class="avatar sm">'+p.host.slice(0,2).toUpperCase()+'</div><span class="footer-name">'+p.host+(p.pos?' <span class="footer-pos">'+p.pos+'</span>':'')+'</span></div>'
-    +'<span class="mode-pill '+(p.tab==='ranked'?'mode-ranked':'mode-casual')+'">'+(p.tab==='ranked'?'Ranked':'Casual')+'</span></div>'
-    +'</div></div>';
+  if(view==='shop') document.getElementById('nav-shop').classList.add('active');
 }
 
-function imIn(id,e){if(e)e.stopPropagation();const p=posts.find(x=>x.id===id);if(!p)return;const i=myImIns.indexOf(id);if(i===-1){myImIns.push(id);p.imIn=(p.imIn||0)+1;privateStats.imins++;}else{myImIns.splice(i,1);p.imIn=Math.max(0,(p.imIn||1)-1);privateStats.imins=Math.max(0,privateStats.imins-1);}LS.set('runs_myimins',myImIns);savePosts();saveStats();render();}
-function sharePost(id,e){if(e)e.stopPropagation();const p=posts.find(x=>x.id===id);if(!p)return;const t=p.title+'\n'+p.desc+(p.location?'\n📍 '+p.location:'')+(p.when?'\n📅 '+p.when:'')+'\n\nFind more runs at runsports.netlify.app';if(navigator.share)navigator.share({title:p.title,text:t}).catch(()=>{});else navigator.clipboard.writeText(t).then(()=>alert('Copied to clipboard!')).catch(()=>{});}
-function deletePost(id,e){if(e)e.stopPropagation();if(!confirm('Delete this post?'))return;posts=posts.filter(p=>p.id!==id);savePosts();render();}
-
-let _boostPostId=null;
-function openBoostModal(id,e){
-  if(e)e.stopPropagation();
-  _boostPostId=id;
-  const now=Date.now(),active=boostedPosts[id]&&boostedPosts[id]>now;
-  document.getElementById('boost-body').innerHTML=
-    '<p style="font-size:13px;color:var(--text2);margin-bottom:12px">Boosted posts appear at the top of the feed with a Sponsored badge.</p>'
-    +(active?'<p style="font-size:12px;font-weight:600;color:var(--orange);margin-bottom:12px">⚡ Currently boosted — '+Math.ceil((boostedPosts[id]-now)/3600000)+'h remaining</p>':'')
-    +'<div style="display:flex;flex-direction:column;gap:8px">'
-    +'<button class="boost-opt" onclick="confirmBoost(24)"><span><div class="boost-opt-name">24 Hours</div><div class="boost-opt-sub">Short burst — great for today\'s game</div></span><span style="font-weight:700;color:var(--orange)">24h ⚡</span></button>'
-    +'<button class="boost-opt" onclick="confirmBoost(72)"><span><div class="boost-opt-name">3 Days</div><div class="boost-opt-sub">Keep it at the top through the weekend</div></span><span style="font-weight:700;color:var(--orange)">72h ⚡</span></button>'
-    +'<button class="boost-opt" onclick="confirmBoost(168)"><span><div class="boost-opt-name">7 Days</div><div class="boost-opt-sub">Max visibility for recurring games</div></span><span style="font-weight:700;color:var(--orange)">7d ⚡</span></button>'
-    +(active?'<button class="btn-secondary" style="margin-top:4px" onclick="removeBoost()">Remove Boost</button>':'')
-    +'</div>';
-  document.getElementById('modal-boost').classList.add('open');
+function openSportPicker(){
+  const grid=document.getElementById('sport-grid');
+  const activeSport=user?.sport||'basketball';
+  grid.innerHTML=Object.entries(SPORTS).map(([key,meta])=>`
+    <button type="button" class="sport-opt ${key===activeSport?'on':''}" onclick="selectSport('${key}')">
+      <span class="s-icon">${meta.icon}</span>
+      <span class="s-name">${esc(meta.name)}</span>
+    </button>
+  `).join('');
+  document.getElementById('modal-sport').classList.add('open');
 }
-function confirmBoost(hours){if(_boostPostId===null)return;boostedPosts[_boostPostId]=Date.now()+hours*3600000;saveBoosts();closeModal('modal-boost');render();}
-function removeBoost(){if(_boostPostId===null)return;delete boostedPosts[_boostPostId];saveBoosts();closeModal('modal-boost');render();}
-function clearSearch(){document.getElementById('search-input').value='';render();}
 
-function openPostModal(type){
-  postDraft={type,contacts:[],lat:null,lng:null};
-  document.querySelectorAll('#post-type-row .tgl-chip').forEach(b=>b.classList.remove('on'));
-  const tb=document.querySelector('#post-type-row .tgl-chip[onclick*="\''+type+'\'"]');
-  if(tb)tb.classList.add('on');
-  setPostType(type,null);
-  ['pm-title','pm-desc','pm-loc','pm-when','ct-type','ct-val'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('pm-fmt').value='any';
-  document.getElementById('pm-needed').value='3';
-  document.getElementById('cprev').innerHTML='';
-  document.getElementById('btn-getloc').textContent='📍 Use my location';
-  document.getElementById('loc-status').textContent='';
-  if(profile){document.getElementById('pm-host').value=profile.name||'';document.getElementById('pm-pos').value=profile.pos||'';document.getElementById('pm-skill').value=profile.skill||'Advanced';}
+function selectSport(code){
+  if(!user) user={name:'Player',sport:code,skill:'Intermediate'};
+  user.sport=code;
+  localStorage.setItem(SK, JSON.stringify(user));
+  updateHeader();
+  closeModal('modal-sport');
+  render();
+}
+
+function toggleCustomSportInput(){
+  const val=document.getElementById('p-sport').value;
+  document.getElementById('custom-sport-wrap').style.display = val==='other' ? 'flex' : 'none';
+}
+
+function openPostModal(defaultType='findpickup'){
+  postType=defaultType;
+  postMode=currentTab;
+  postContacts=[];
+  document.getElementById('p-sport').value=user?.sport||'basketball';
+  toggleCustomSportInput();
+  document.getElementById('p-custom-sport').value='';
+  document.getElementById('p-title').value='';
+  document.getElementById('p-loc').value=user?.area||'';
+  const nowPlus1h=new Date(Date.now()+3600000);
+  const localISO=new Date(nowPlus1h.getTime()-nowPlus1h.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  document.getElementById('p-when').value=localISO;
+  document.getElementById('p-desc').value='';
+  document.getElementById('p-cval').value='';
+  renderPostContacts();
+  document.querySelectorAll('#post-type-row .tgl-chip').forEach(b=>{
+    b.classList.toggle('on', b.getAttribute('onclick')?.includes(`'${postType}'`));
+  });
+  document.querySelectorAll('#p-mode-seg .seg-btn').forEach(b=>{
+    b.classList.toggle('on', b.textContent.trim().toLowerCase()===postMode);
+  });
+  document.getElementById('mpost-title').textContent='Create Post';
+  document.getElementById('mpost-sub').textContent='Auto-deletes 24 hours after scheduled game time';
   document.getElementById('modal-post').classList.add('open');
 }
-function setPostType(type,btn){
-  postDraft.type=type;
-  if(btn){document.querySelectorAll('#post-type-row .tgl-chip').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
-  const tm=TM[type]||TM.findpickup;
-  document.getElementById('mpost-title').textContent=tm.title;
-  document.getElementById('mpost-sub').textContent=tm.sub;
-  document.getElementById('pm-needed-wrap').style.display=(type==='needplayers'||type==='postpeople')?'block':'none';
-}
-function closeModal(id,e){if(!e||e.target===document.getElementById(id))document.getElementById(id).classList.remove('open');}
-function qc(type){document.getElementById('ct-type').value=type;document.getElementById('ct-val').focus();}
-function addContact(){const type=document.getElementById('ct-type').value.trim(),val=document.getElementById('ct-val').value.trim();if(!type||!val)return;postDraft.contacts.push({type,val});document.getElementById('ct-type').value='';document.getElementById('ct-val').value='';renderCprev();}
-function removeContact(i){postDraft.contacts.splice(i,1);renderCprev();}
-function renderCprev(){document.getElementById('cprev').innerHTML=postDraft.contacts.map((c,i)=>'<div class="cp-chip">'+(CI[c.type]||'🔗')+' '+c.type+': <strong>'+c.val+'</strong><button onclick="removeContact('+i+')">✕</button></div>').join('');}
-function submitPost(){
-  const title=document.getElementById('pm-title').value.trim(),host=document.getElementById('pm-host').value.trim();
-  if(!title||!host){alert('Need a title and your name.');return;}
-  if(!postDraft.contacts.length){alert('Add at least one contact method.');return;}
-  const p={id:Date.now(),tab:activeTab,type:postDraft.type,sport:selectedSport,title,desc:document.getElementById('pm-desc').value.trim(),location:document.getElementById('pm-loc').value.trim(),when:document.getElementById('pm-when').value.trim(),fmt:document.getElementById('pm-fmt').value,skill:document.getElementById('pm-skill').value,openGym:postDraft.type==='spot',needed:parseInt(document.getElementById('pm-needed').value)||null,host,pos:document.getElementById('pm-pos').value,contact:[...postDraft.contacts],ts:Date.now(),imIn:0,lat:postDraft.lat,lng:postDraft.lng};
-  posts.unshift(p);savePosts();privateStats.posted++;saveStats();
-  if(p.location){runHistory.places.unshift({name:p.location,type:p.type,when:p.when,date:new Date().toLocaleDateString()});if(runHistory.places.length>20)runHistory.places=runHistory.places.slice(0,20);saveHistory();}
-  closeModal('modal-post');render();
+
+function setPostType(type, btn){
+  postType=type;
+  document.querySelectorAll('#post-type-row .tgl-chip').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
 }
 
-function openProfile(){renderProfileModal();document.getElementById('modal-profile').classList.add('open');}
-function renderProfileModal(){
-  const b=document.getElementById('profile-body');
-  if(!profile){b.innerHTML='<p style="color:#6b7280;margin-bottom:16px">No profile yet.</p><button class="btn-primary" onclick="closeModal(\'modal-profile\');document.getElementById(\'setup-screen\').classList.remove(\'hidden\')">Set Up Profile</button>';return;}
-  const mp=posts.filter(p=>p.host===profile.name);
-  const pl=runHistory.places.length?runHistory.places.slice(0,5).map(p=>'<div class="hist-item"><div class="hist-left"><span>📍</span><div><div class="hist-name">'+p.name+'</div><div class="hist-meta">'+p.type+(p.when?' · '+p.when:'')+'</div></div></div><span class="hist-date">'+p.date+'</span></div>').join(''):'<div class="hist-empty">No places yet</div>';
-  b.innerHTML='<div class="profile-banner"><div class="profile-av-lg">'+profile.name.slice(0,2).toUpperCase()+'</div><div><div class="profile-name">'+profile.name+'</div><div class="profile-sub">'+(profile.skill||'Player')+(profile.area?' · '+profile.area:'')+'</div></div></div>'
-    +'<div class="stat-row"><div class="stat-box"><div class="stat-n">'+privateStats.posted+'</div><div class="stat-l">Posted</div></div><div class="stat-box"><div class="stat-n">'+privateStats.imins+'</div><div class="stat-l">I\'m In</div></div><div class="stat-box"><div class="stat-n">'+myImIns.length+'</div><div class="stat-l">Runs Joined</div></div></div>'
-    +'<div class="section-head">Recent Places</div>'+pl
-    +'<div class="section-head">My Posts ('+mp.length+')</div>'
-    +(mp.length?mp.slice(0,4).map(p=>'<div class="hist-item"><div class="hist-left"><span>📍</span><div><div class="hist-name">'+p.title+'</div><div class="hist-meta">'+p.tab+' · '+p.sport+'</div></div></div><span class="hist-date">'+ago(p.ts)+'</span></div>').join(''):'<div class="hist-empty">No posts yet</div>')
-    +'<button class="btn-secondary" onclick="editProfile()">Edit Profile</button>';
-}
-function editProfile(){closeModal('modal-profile');document.getElementById('setup-screen').classList.remove('hidden');if(profile){document.getElementById('setup-name').value=profile.name||'';document.getElementById('setup-area').value=profile.area||'';}}
-function updateHdrAvatar(){if(!profile)return;document.getElementById('hdr-av').textContent=profile.name.slice(0,2).toUpperCase();}
-function setSetupSkill(sk,btn){setupSkill=sk;document.querySelectorAll('#setup-skill-seg .seg-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
-function saveSetup(){
-  const name=document.getElementById('setup-name').value.trim();
-  if(!name){alert('Enter your name.');return;}
-  selectedSport=document.getElementById('setup-sport').value;
-  LS.set('runs_sport',selectedSport);
-  profile={name,area:document.getElementById('setup-area').value.trim(),skill:setupSkill};
-  LS.set('runs_profile',profile);
-  document.getElementById('setup-screen').classList.add('hidden');
-  updateHdrAvatar();
-  const sp=getSport();
-  document.getElementById('sport-btn').textContent=sp.icon+' '+sp.label+' ▾';
-  buildTicker();buildShop();render();
+function setPostMode(mode, btn){
+  postMode=mode;
+  document.querySelectorAll('#p-mode-seg .seg-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
 }
 
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape')['modal-post','modal-profile','modal-sport','modal-boost','modal-tos','modal-privacy'].forEach(id=>document.getElementById(id).classList.remove('open'));
-  if(e.key==='Enter'&&document.activeElement.id==='ct-val')addContact();
-});
+function addPostContact(){
+  const inp=document.getElementById('p-cval');
+  const val=inp.value.trim();
+  if(!val) return;
+  if(postContacts.length>=3){showToast('Max 3 contact methods');return;}
+  postContacts.push(val);
+  inp.value='';
+  renderPostContacts();
+}
 
-const initSp=getSport();
-document.getElementById('sport-btn').textContent=initSp.icon+' '+initSp.label+' ▾';
-buildTicker();
-buildShop();
-if(profile){document.getElementById('setup-screen').classList.add('hidden');updateHdrAvatar();}
-switchTab(activeTab);
-setInterval(render,60000);
+function removePostContact(idx){
+  postContacts.splice(idx,1);
+  renderPostContacts();
+}
+
+function renderPostContacts(){
+  const el=document.getElementById('p-cprev');
+  el.innerHTML=postContacts.map((c,i)=>`
+    <span class="cp-chip">${esc(c)} <button type="button" onclick="removePostContact(${i})">✕</button></span>
+  `).join('');
+}
+
+async function submitPost(){
+  const title=document.getElementById('p-title').value.trim();
+  if(!title){showToast('Add a game or spot title');return;}
+  const sport=document.getElementById('p-sport').value;
+  const customSport=sport==='other' ? document.getElementById('p-custom-sport').value.trim() : '';
+  if(sport==='other' && !customSport){showToast('Enter a custom activity name');return;}
+  const loc=document.getElementById('p-loc').value.trim();
+  const whenInput=document.getElementById('p-when').value;
+  const scheduledAt=whenInput ? new Date(whenInput).getTime() : Date.now();
+  const whenLabel=whenInput ? new Date(scheduledAt).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : 'Today';
+  const desc=document.getElementById('p-desc').value.trim();
+  const pendingContact=document.getElementById('p-cval').value.trim();
+  const finalContacts=pendingContact ? [...postContacts, pendingContact].slice(0,3) : [...postContacts];
+
+  const newPost={
+    id:'post_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+    type:postType,
+    mode:postMode,
+    sport,
+    customSport,
+    title,
+    location:loc,
+    whenLabel,
+    scheduledAt,
+    desc,
+    contacts:finalContacts,
+    authorName:user?.name||'Player',
+    authorSkill:user?.skill||'Intermediate',
+    authorArea:user?.area||'',
+    imInCount:1,
+    createdAt:Date.now()
+  };
+
+  posts=[newPost, ...posts];
+  imInSet.add(newPost.id);
+  localStorage.setItem(IK, JSON.stringify([...imInSet]));
+  if(user){
+    user.postsCreated=(user.postsCreated||0)+1;
+    localStorage.setItem(SK, JSON.stringify(user));
+  }
+
+  closeModal('modal-post');
+  switchTab(postMode);
+  render();
+
+  try{
+    await createPostInCloud(newPost);
+    showToast('Posted live');
+  }catch(err){
+    showToast('Saved locally (check Supabase table)');
+  }
+}
+
+async function toggleImIn(postId, ev){
+  ev.stopPropagation();
+  const idx=posts.findIndex(p=>p.id===postId);
+  if(idx===-1) return;
+  const p=posts[idx];
+  const already=imInSet.has(postId);
+  if(already){
+    imInSet.delete(postId);
+    p.imInCount=Math.max(0,(p.imInCount||0)-1);
+  }else{
+    imInSet.add(postId);
+    p.imInCount=(p.imInCount||0)+1;
+    if(user){
+      user.gamesJoined=(user.gamesJoined||0)+1;
+      localStorage.setItem(SK, JSON.stringify(user));
+    }
+  }
+  localStorage.setItem(IK, JSON.stringify([...imInSet]));
+  render();
+  try{
+    await updateImInInCloud(postId, p.imInCount);
+  }catch(e){}
+}
+
+function sharePost(postId, ev){
+  ev.stopPropagation();
+  const p=posts.find(x=>x.id===postId);
+  if(!p) return;
+  const sp=getSportMeta(p.sport, p.customSport);
+  const txt=`${sp.icon} ${p.title}${p.location?' @ '+p.location:''} (${p.whenLabel}) — Runs`;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(txt).then(()=>showToast('Copied post details')).catch(()=>showToast(txt));
+  }else{
+    showToast(txt);
+  }
+}
+
+async function deletePost(postId, ev){
+  ev.stopPropagation();
+  posts=posts.filter(p=>p.id!==postId);
+  delete commentsMap[postId];
+  openChatIds.delete(postId);
+  localStorage.setItem(CK, JSON.stringify([...openChatIds]));
+  render();
+  try{
+    await deletePostInCloud(postId);
+    showToast('Post removed');
+  }catch(e){
+    showToast('Removed from view');
+  }
+}
+
+function toggleComments(postId, ev){
+  if(ev && ev.target.closest('button,a,input')) return;
+  if(openChatIds.has(postId)) openChatIds.delete(postId);
+  else openChatIds.add(postId);
+  localStorage.setItem(CK, JSON.stringify([...openChatIds]));
+  render();
+}
+
+async function sendComment(postId, ev){
+  if(ev) ev.stopPropagation();
+  const inp=document.getElementById(`chat-inp-${postId}`);
+  if(!inp) return;
+  const text=inp.value.trim();
+  if(!text) return;
+  const comment={
+    id:'cmt_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+    postId,
+    authorName:user?.name||'Player',
+    text,
+    createdAt:Date.now()
+  };
+  if(!commentsMap[postId]) commentsMap[postId]=[];
+  commentsMap[postId].push(comment);
+  openChatIds.add(postId);
+  localStorage.setItem(CK, JSON.stringify([...openChatIds]));
+  inp.value='';
+  render();
+  try{
+    await createCommentInCloud(comment);
+  }catch(e){
+    showToast('Comment added locally');
+  }
+}
+
+function isBoosted(postId){
+  const exp=boosts[postId];
+  return exp && Number(exp) > Date.now();
+}
+
+function openBoostModal(postId, ev){
+  ev.stopPropagation();
+  boostTargetId=postId;
+  document.getElementById('boost-body').innerHTML=`
+    <button type="button" class="boost-opt" onclick="applyBoost(2)">
+      <div><div class="boost-opt-name">2 Hours Top Pin</div><div class="boost-opt-sub">Great for right-now pickup runs</div></div>
+      <span style="font-weight:700;color:var(--orange)">Free</span>
+    </button>
+    <button type="button" class="boost-opt" onclick="applyBoost(12)">
+      <div><div class="boost-opt-name">12 Hours Top Pin</div><div class="boost-opt-sub">Stay near the top all day</div></div>
+      <span style="font-weight:700;color:var(--orange)">Free</span>
+    </button>
+  `;
+  document.getElementById('modal-boost').classList.add('open');
+}
+
+function applyBoost(hours){
+  if(!boostTargetId) return;
+  boosts[boostTargetId]=Date.now() + hours*3600000;
+  localStorage.setItem(BK, JSON.stringify(boosts));
+  closeModal('modal-boost');
+  render();
+  showToast(`Boosted for ${hours} hours`);
+}
+
+function openProfile(){
+  if(!user) return;
+  const initials=user.name.split(/\s+/).map(p=>p[0]).join('').toUpperCase().slice(0,2)||'ME';
+  const myPosts=posts.filter(p=>p.authorName===user.name);
+  const sp=getSportMeta(user.sport, user.customSport);
+  document.getElementById('profile-body').innerHTML=`
+    <div class="profile-banner">
+      <div class="profile-av-lg">${esc(initials)}</div>
+      <div>
+        <div class="profile-name">${esc(user.name)}</div>
+        <div class="profile-sub">${sp.icon} ${esc(sp.name)} · ${esc(user.skill||'Intermediate')}${user.area?' · '+esc(user.area):''}</div>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-n">${user.postsCreated||myPosts.length||0}</div><div class="stat-l">Posts</div></div>
+      <div class="stat-box"><div class="stat-n">${user.gamesJoined||imInSet.size||0}</div><div class="stat-l">In</div></div>
+      <div class="stat-box"><div class="stat-n">${posts.length}</div><div class="stat-l">Active</div></div>
+    </div>
+    <button type="button" class="btn-secondary" onclick="openEditProfile()">Edit Profile</button>
+    <div style="margin-top:8px">
+      <div class="section-head">Your Active Posts</div>
+      ${myPosts.length ? myPosts.map(p=>`
+        <div class="hist-item">
+          <div class="hist-left"><span>${getSportMeta(p.sport,p.customSport).icon}</span><div><div class="hist-name">${esc(p.title)}</div><div class="hist-meta">${esc(p.location||'No location')}</div></div></div>
+          <div class="hist-date">${esc(p.whenLabel)}</div>
+        </div>
+      `).join('') : '<div class="hist-empty">No active posts right now.</div>'}
+    </div>
+  `;
+  document.getElementById('modal-profile').classList.add('open');
+}
+
+function openEditProfile(){
+  if(!user) return;
+  editSkill=user.skill||'Advanced';
+  document.getElementById('e-name').value=user.name||'';
+  document.getElementById('e-area').value=user.area||'';
+  document.querySelectorAll('#e-skill-seg .seg-btn').forEach(b=>{
+    b.classList.toggle('on', b.textContent.trim()===editSkill);
+  });
+  closeModal('modal-profile');
+  document.getElementById('modal-edit').classList.add('open');
+}
+
+function setEditSkill(val, btn){
+  editSkill=val;
+  document.querySelectorAll('#e-skill-seg .seg-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+function saveEdit(){
+  const name=document.getElementById('e-name').value.trim();
+  if(!name){showToast('Name is required');return;}
+  user.name=name;
+  user.area=document.getElementById('e-area').value.trim();
+  user.skill=editSkill;
+  localStorage.setItem(SK, JSON.stringify(user));
+  updateHeader();
+  closeModal('modal-edit');
+  showToast('Profile saved');
+  render();
+}
+
+function closeModal(id, ev){
+  if(ev && ev.target!==document.getElementById(id)) return;
+  document.getElementById(id).classList.remove('open');
+}
+
+function initMap(){
+  if(map) return;
+  map=L.map('map-container').setView([40.2338, -111.6585], 11);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+  markersLayer=L.layerGroup().addTo(map);
+  document.getElementById('map-legend').innerHTML=`
+    <div class="map-legend-title">Post Types</div>
+    <div class="legend-row"><span class="legend-dot" style="background:#3b82f6"></span>Pickup</div>
+    <div class="legend-row"><span class="legend-dot" style="background:#f59e0b"></span>Need Players</div>
+    <div class="legend-row"><span class="legend-dot" style="background:#22c55e"></span>Spot</div>
+    <div class="legend-row"><span class="legend-dot" style="background:#e85d04"></span>Go</div>
+  `;
+}
+
+function renderMapMarkers(){
+  if(!map || !markersLayer) return;
+  markersLayer.clearLayers();
+  const activePosts=posts.filter(p=>!isPostExpired(p));
+  activePosts.forEach((p, i)=>{
+    const angle=i*0.9;
+    const radius=0.02 + (i%5)*0.015;
+    const lat=40.2338 + Math.sin(angle)*radius;
+    const lng=-111.6585 + Math.cos(angle)*radius;
+    const color=(TYPE_INFO[p.type]||TYPE_INFO.findpickup).color;
+    const sp=getSportMeta(p.sport, p.customSport);
+    const marker=L.circleMarker([lat, lng], {
+      radius:9, fillColor:color, color:'#fff', weight:2, opacity:1, fillOpacity:0.9
+    }).addTo(markersLayer);
+    const mapsUrl=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.location||p.title)}`;
+    marker.bindPopup(`
+      <div class="popup-title">${sp.icon} ${esc(p.title)}</div>
+      <div class="popup-meta">${esc(p.location||'Local spot')} · ${esc(p.whenLabel)}</div>
+      <a class="popup-maps" href="${mapsUrl}" target="_blank" rel="noopener noreferrer">Maps</a>
+    `);
+  });
+}
+
+function formatAge(ts){
+  const mins=Math.max(1, Math.floor((Date.now()-Number(ts||Date.now()))/60000));
+  if(mins<60) return `${mins}m ago`;
+  const hrs=Math.floor(mins/60);
+  if(hrs<24) return `${hrs}h ago`;
+  return `${Math.floor(hrs/24)}d ago`;
+}
+
+function esc(str){
+  return String(str||'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function render(){
+  const feed=document.getElementById('feed');
+  const q=(document.getElementById('search-input')?.value||'').trim().toLowerCase();
+
+  const filtered=posts
+    .filter(p=>!isPostExpired(p))
+    .filter(p=>(p.mode||'casual')===currentTab)
+    .filter(p=>{
+      if(!q) return true;
+      const sp=getSportMeta(p.sport, p.customSport);
+      const hay=[p.title, p.location, p.desc, p.authorName, sp.name, p.customSport].join(' ').toLowerCase();
+      return hay.includes(q);
+    })
+    .sort((a,b)=>{
+      const ba=isBoosted(a.id)?1:0;
+      const bb=isBoosted(b.id)?1:0;
+      if(ba!==bb) return bb-ba;
+      return (b.createdAt||0)-(a.createdAt||0);
+    });
+
+  if(!filtered.length){
+    feed.innerHTML=`
+      <div id="empty-state">
+        <div class="empty-icon">🏟️</div>
+        <div class="empty-title">No ${currentTab==='rated'?'rated':'casual'} posts right now</div>
+        <div class="empty-sub">Tap + to post a pickup game, spot, or activity. Posts stay up for 24 hours after game time.</div>
+      </div>
+    `;
+    if(currentView==='map') renderMapMarkers();
+    return;
+  }
+
+  feed.innerHTML=filtered.map(p=>{
+    const tInfo=TYPE_INFO[p.type]||TYPE_INFO.findpickup;
+    const sp=getSportMeta(p.sport, p.customSport);
+    const initials=(p.authorName||'P').split(/\s+/).map(x=>x[0]).join('').toUpperCase().slice(0,2)||'P';
+    const isIn=imInSet.has(p.id);
+    const boosted=isBoosted(p.id);
+    const postComments=commentsMap[p.id]||[];
+    const chatOpen=openChatIds.has(p.id);
+    const mapsHref=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.location||p.title)}`;
+
+    return `
+      <article class="post-card ${boosted?'boosted':''}" onclick="toggleComments('${p.id}', event)">
+        <div class="card-border" style="background:${tInfo.color}"></div>
+        <div class="card-body">
+          ${boosted?'<span class="sponsored-tag">🚀 BOOSTED</span>':''}
+          <div class="card-top">
+            <div class="badges">
+              <span class="badge ${tInfo.cls}">${tInfo.label}</span>
+              <span class="badge b-sport">${sp.icon} ${esc(sp.name)}</span>
+              ${p.authorSkill?`<span class="badge b-skill">${esc(p.authorSkill)}</span>`:''}
+            </div>
+            <div class="card-ts">${formatAge(p.createdAt)}</div>
+          </div>
+          <div class="card-title">${esc(p.title)}</div>
+          <div class="card-user">
+            <span class="avatar sm">${esc(initials)}</span>
+            <span class="user-name">${esc(p.authorName||'Player')}${p.authorArea?` <span class="user-pos">· ${esc(p.authorArea)}</span>`:''}</span>
+          </div>
+          <div class="card-when">🕒 ${esc(p.whenLabel||'Today')}</div>
+          ${p.desc?`<div class="card-desc">${esc(p.desc)}</div>`:''}
+          ${p.location?`
+            <div class="card-location" onclick="event.stopPropagation()">
+              <span class="loc-text">📍 ${esc(p.location)}</span>
+              <a class="btn-maps" href="${mapsHref}" target="_blank" rel="noopener noreferrer">Maps</a>
+            </div>
+          `:''}
+          ${(p.contacts&&p.contacts.length)?`
+            <div class="card-contacts" onclick="event.stopPropagation()">
+              ${p.contacts.map(c=>`<span class="contact-chip">💬 ${esc(c)}</span>`).join('')}
+            </div>
+          `:''}
+          <div class="card-actions" onclick="event.stopPropagation()">
+            <button type="button" class="btn-imin ${isIn?'active':''}" onclick="toggleImIn('${p.id}', event)">${isIn?'✓ I\'m In':'I\'m In'} (${p.imInCount||0})</button>
+            <button type="button" class="btn-chat ${chatOpen?'active':''}" onclick="toggleComments('${p.id}', event)">💬 Comments (${postComments.length})</button>
+            <button type="button" class="btn-share-sm" onclick="sharePost('${p.id}', event)">Share</button>
+            <button type="button" class="btn-boost ${boosted?'active':''}" onclick="openBoostModal('${p.id}', event)">Boost</button>
+            <button type="button" class="btn-del" onclick="deletePost('${p.id}', event)" title="Delete post">✕</button>
+          </div>
+          ${chatOpen?`
+            <div class="chat-panel" onclick="event.stopPropagation()">
+              <div class="chat-msgs">
+                ${postComments.length ? postComments.map(c=>{
+                  const cInit=(c.authorName||'P').split(/\s+/).map(x=>x[0]).join('').toUpperCase().slice(0,2)||'P';
+                  return `
+                    <div class="chat-msg">
+                      <span class="chat-av">${esc(cInit)}</span>
+                      <div class="chat-bubble">
+                        <div class="chat-sender">${esc(c.authorName||'Player')}</div>
+                        <div class="chat-text">${esc(c.text)}</div>
+                        <div class="chat-ts">${formatAge(c.createdAt)}</div>
+                      </div>
+                    </div>
+                  `;
+                }).join('') : '<div class="chat-empty">No comments yet. Click below to start the thread.</div>'}
+              </div>
+              <div class="chat-input-row">
+                <input id="chat-inp-${p.id}" placeholder="Write a comment..." onkeydown="if(event.key==='Enter')sendComment('${p.id}', event)">
+                <button type="button" class="btn-chat-send" onclick="sendComment('${p.id}', event)">➤</button>
+              </div>
+            </div>
+          `:''}
+          <div class="card-footer">
+            <div class="footer-user">
+              <span class="footer-name">Tap card to ${chatOpen?'hide':'open'} comments</span>
+            </div>
+            <span class="mode-pill ${p.mode==='rated'?'mode-rated':'mode-casual'}">${p.mode==='rated'?'Rated':'Casual'}</span>
+          </div>
+        </div>
+      </article>
+    `;
+  }).join('');
+
+  if(currentView==='map') renderMapMarkers();
+}
+
+init();
 </script>
 </body>
 </html>
