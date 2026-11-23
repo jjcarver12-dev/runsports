@@ -199,7 +199,6 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
 .sport-opt .s-name{font-size:12px;font-weight:700;color:var(--text)}
 .setup-screen{position:fixed;inset:0;z-index:500;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px}
 .setup-screen.hidden{display:none}
-.setup-logo{font-size:48px;margin-bottom:12px}
 .setup-title{font-size:28px;font-weight:800;margin-bottom:6px}
 .setup-sub{font-size:15px;color:var(--text2);margin-bottom:32px;text-align:center}
 .setup-form{width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px}
@@ -231,7 +230,6 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
 <body>
 
 <div class="setup-screen" id="setup-screen">
-  <div class="setup-logo">🏀</div>
   <div class="setup-title">Welcome to Runs</div>
   <div class="setup-sub">Find pickup games near you. Post spots, find players, get active.</div>
   <div class="setup-form">
@@ -262,7 +260,7 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
         <button type="button" class="seg-btn" onclick="setSetupSkill('Elite',this)">Elite</button>
       </div>
     </div>
-    <button type="button" class="btn-primary" onclick="saveSetup()">Let's Go 🏀</button>
+    <button type="button" class="btn-primary" onclick="saveSetup()">Let's Go</button>
   </div>
 </div>
 
@@ -412,7 +410,7 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
       </div>
       <div class="field"><label>Title</label><input id="p-title" placeholder="e.g. 5v5 at Riverside Park" maxlength="60"></div>
       <div class="field"><label>Location / Park / Address</label><input id="p-loc" placeholder="Park name, court, or city & zip..." maxlength="80"></div>
-      <div class="field"><label>When (auto-expires 24 hours after scheduled time)</label><input type="datetime-local" id="p-when"></div>
+      <div class="field"><label>When (auto-expires 24 hours after scheduled game time)</label><input type="datetime-local" id="p-when"></div>
       <div class="field"><label>Notes</label><textarea id="p-desc" rows="2" placeholder="Format, rules, skill level, what to bring..." maxlength="300"></textarea></div>
       <hr class="divider">
       <div class="sec-label">Contact Info (Optional)</div>
