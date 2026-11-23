@@ -419,7 +419,7 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
         <button type="button" class="btn-add" onclick="addPostContact()">+</button>
       </div>
       <div class="cprev" id="p-cprev"></div>
-      <button type="button" class="btn-primary" onclick="submitPost()">Post</button>
+      <button type="button" class="btn-primary" id="btn-submit-post" onclick="submitPost()">Post</button>
     </div>
   </div>
 </div>
@@ -487,7 +487,7 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const SUPABASE_URL = 'https://xoefiexledipjuzqngek.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_2MsncCq86h0pOTxUHg1uhQ_ss0IPxxo';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhvZWZpZXhsZWRpcGp1enFuZ2VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0NTM0ODQsImV4cCI6MjExMTAyOTQ4NH0.8PKMe6ED8dNE8_vOHrIYLeFwsocuX7sDac5TNcqNYns';
 
 const STORE_ITEMS = [
   {cat:'🏀 Basketball',emoji:'🏀',name:'Wilson Evolution Indoor Game Basketball',desc:'Microfiber composite leather, deep channels, official 29.5" size.',price:'$64.99',asin:'B0000BYA66'},
@@ -561,7 +561,7 @@ function showToast(msg){
   el.textContent=msg;
   el.classList.add('show');
   clearTimeout(window._toastTimer);
-  window._toastTimer=setTimeout(()=>el.classList.remove('show'),2200);
+  window._toastTimer=setTimeout(()=>el.classList.remove('show'),2600);
 }
 
 function getSportMeta(code, customName){
@@ -918,23 +918,26 @@ async function submitPost(){
     createdAt:Date.now()
   };
 
-  posts=[newPost, ...posts];
-  imInSet.add(newPost.id);
-  localStorage.setItem(IK, JSON.stringify([...imInSet]));
-  if(user){
-    user.postsCreated=(user.postsCreated||0)+1;
-    localStorage.setItem(SK, JSON.stringify(user));
-  }
-
-  closeModal('modal-post');
-  switchTab(postMode);
-  render();
+  const btn=document.getElementById('btn-submit-post');
+  if(btn) btn.disabled=true;
 
   try{
     await createPostInCloud(newPost);
-    showToast('Posted live');
+    posts=[newPost, ...posts];
+    imInSet.add(newPost.id);
+    localStorage.setItem(IK, JSON.stringify([...imInSet]));
+    if(user){
+      user.postsCreated=(user.postsCreated||0)+1;
+      localStorage.setItem(SK, JSON.stringify(user));
+    }
+    closeModal('modal-post');
+    switchTab(postMode);
+    render();
+    showToast('Posted to cloud');
   }catch(err){
-    showToast('Saved locally (check Supabase table)');
+    showToast('Cloud error: '+(err.message||'check Supabase'));
+  }finally{
+    if(btn) btn.disabled=false;
   }
 }
 
